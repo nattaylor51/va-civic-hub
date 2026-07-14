@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virginia Civic Action Hub — SERV at UVA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f4;color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column}
+:root{--navy:#1a2e4a;--gold:#c8a84b;--red:#8b1a1a}
+.nav{background:var(--navy);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:3px solid var(--gold);flex-shrink:0}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:15px;font-weight:500}
+.seal{width:32px;height:32px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--navy);font-weight:700;flex-shrink:0}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 14px;border:none;background:transparent;color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;font-weight:500;border-radius:6px;transition:all .15s;font-family:inherit}
+.nav-tab:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-tab.active{background:var(--gold);color:var(--navy)}
+.main{flex:1}
+.panel{display:none;padding:1.5rem;max-width:960px;margin:0 auto;width:100%}
+.panel.active{display:block}
+.sh{margin-bottom:1.5rem}
+.sh h2{font-size:20px;font-weight:500;margin-bottom:4px}
+.sh p{font-size:13px;color:#666}
+.card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:500;margin-bottom:1rem}
+.fg{display:grid;gap:12px}
+.fg2{grid-template-columns:1fr 1fr}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:6px;font-family:inherit;font-size:14px;background:#fff;color:#1a1a1a;transition:border-color .15s}
+select option{background:#fff;color:#1a1a1a}
+textarea{resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,168,75,.15)}
+.fg-gold{background:#fdf9f0;border:1.5px solid var(--gold);border-left:4px solid var(--gold);border-radius:6px;padding:1rem;margin-bottom:12px}
+.fg-gold input,.fg-gold select,.fg-gold textarea{border-color:var(--gold)}
+.fg-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;transition:all .15s;font-family:inherit}
+.btn:hover{background:#f5f5f5}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-navy{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-navy:hover{background:#243d5e}
+.btn-gold{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:600}
+.btn-gold:hover{background:#b8973f}
+.btn-red{background:#fff;color:#a32d2d;border-color:#a32d2d}
+.btn-red:hover{background:#fcebeb}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.tag{font-size:11px;padding:2px 8px;border-radius:4px;background:#f0f0f0;color:#555;border:0.5px solid #ddd}
+.badge-on{background:#e8f5e9;color:#1b5e20;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
+.badge-off{background:#fff8e1;color:#e65100;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
+.hero{background:var(--navy);border-radius:10px;padding:2rem;margin-bottom:1.5rem}
+.hero h2{font-size:20px;font-weight:500;margin-bottom:6px;color:#fff}
+.hero p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:1.25rem}
+.loc-wrap{position:relative;max-width:360px}
+.loc-wrap select{background:#fff;color:var(--navy);border:none;font-weight:500;padding:10px 12px;font-size:14px;border-radius:6px;appearance:none;cursor:pointer}
+.loc-wrap::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%) rotate(90deg);color:var(--navy);pointer-events:none;font-size:18px}
+.leg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:1.5rem}
+.leg-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1rem;display:flex;align-items:flex-start;gap:12px}
+.av{width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.bill-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1.25rem;margin-bottom:.75rem;cursor:pointer;transition:all .15s}
+.bill-card:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(200,168,75,.15)}
+.bill-num{font-size:11px;font-weight:700;letter-spacing:.06em;background:var(--red);color:#fff;padding:2px 8px;border-radius:4px}
+.email-box{background:#fff;border:2px solid var(--gold);border-radius:10px;padding:1.5rem;margin:1rem 0;display:none}
+.email-box.open{display:block}
+.email-hdr{border-bottom:0.5px solid #eee;padding-bottom:12px;margin-bottom:12px}
+.email-hdr p{font-size:13px;margin-bottom:4px}
+.email-hdr strong{color:#1a1a1a}
+.email-body{font-size:14px;line-height:1.8;white-space:pre-wrap}
+.share-row{background:#f5f5f5;border:0.5px solid #ddd;border-radius:6px;padding:1rem;display:flex;gap:10px;align-items:center}
+.frow{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.frow input,.frow select{flex:1;min-width:140px}
+.steps{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+.step{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
+.snum{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.sarrow{color:var(--gold);font-weight:600}
+.notice{background:#e8f4fd;border:0.5px solid #b8d4ed;border-radius:6px;padding:.75rem 1rem;font-size:13px;color:#1a5276;margin-bottom:1rem}
+.sub-list{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:.25rem 1.25rem}
+.sub-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:0.5px solid #eee;font-size:13px}
+.sub-row:last-child{border-bottom:none}
+.empty{text-align:center;padding:2.5rem 1rem;color:#999}
+.lock-wall{display:flex;align-items:flex-start;justify-content:center;padding:4rem 1rem;min-height:400px}
+.lock-box{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:2rem;width:100%;max-width:380px;text-align:center}
+.lock-box h3{font-size:18px;font-weight:500;margin-bottom:6px}
+.lock-box p{font-size:13px;color:#666;margin-bottom:1.5rem}
+.lock-err{font-size:12px;color:#a32d2d;margin-top:8px;display:none}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:0.5px solid #ccc;border-radius:6px;font-size:13px;background:#f5f5f5;margin:3px}
+.pill button{background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:0 0 0 2px}
+.pill button:hover{color:#a32d2d}
+.pchip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:#f5f5f5;border:0.5px solid #ccc;border-radius:6px;font-size:12px;margin:2px}
+.pchip button{background:none;border:none;cursor:pointer;color:#999;font-size:14px;line-height:1;padding:0}
+.pt{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:3px;margin-right:2px}
+.pt-p{background:#e8f0fb;color:#1a4a8a}
+.pt-c{background:#fef3e2;color:#7a4800}
+.divider{border:none;border-top:0.5px solid #eee;margin:1rem 0}
+.signup-banner{background:linear-gradient(135deg,var(--navy) 0%,#2a4a6a 100%);border-radius:10px;padding:1.75rem 2rem;margin-top:2rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.signup-banner h3{color:#fff;font-size:16px;font-weight:500;margin-bottom:4px}
+.signup-banner p{color:rgba(255,255,255,.7);font-size:13px}
+.sf{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:280px;max-width:460px}
+.sf input{flex:1;min-width:140px;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:13px}
+.sf input::placeholder{color:rgba(255,255,255,.5)}
+.atabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid #ddd;padding-bottom:.75rem;flex-wrap:wrap}
+.atab{padding:6px 14px;border:0.5px solid #ddd;background:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;color:#666;transition:all .15s}
+.atab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.asec{display:none}.asec.active{display:block}
+.leg-wrap{max-height:440px;overflow-y:auto;border:0.5px solid #ddd;border-radius:6px}
+.leg-row{display:flex;align-items:center;padding:.5rem .75rem;border-bottom:0.5px solid #eee;font-size:13px;gap:8px}
+.leg-row:last-child{border-bottom:none}
+.leg-row:hover{background:#f9f9f9}
+.ln{font-weight:500;flex:1;min-width:120px}
+.lr{color:#666;font-size:12px;width:60px;flex-shrink:0}
+.lc{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;width:50px;text-align:center}
+.lc-s{background:#e8f0fb;color:#1a4a8a}
+.lc-h{background:#e8f5e9;color:#1b5e20}
+.loc-hdr{font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .75rem;background:#f0f0f0;border-bottom:0.5px solid #ddd;border-top:0.5px solid #ddd}
+.tmpl-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.tbill{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);background:var(--navy);padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px}
+footer{background:var(--navy);border-top:3px solid var(--gold);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:auto}
+.fl{display:flex;align-items:center;gap:14px}
+.flogo{display:flex;align-items:center}
+.fll{font-family:Georgia,serif;font-size:32px;font-weight:700;line-height:1}
+.ftag{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px}
+.fdiv{width:1px;height:36px;background:rgba(255,255,255,.2);margin:0 6px}
+.fr{display:flex;align-items:center;gap:10px}
+.flinks{text-align:right;color:rgba(255,255,255,.45);font-size:11px;line-height:1.7}
+.flinks a{color:var(--gold);text-decoration:none}
+.secret{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.1);font-size:14px;padding:6px 8px;border-radius:4px;transition:color .25s;font-family:inherit}
+.secret:hover{color:rgba(255,255,255,.4)}
+.emodal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(0,0,0,.6);backdrop-filter:blur(2px)}
+.emodal.open{display:flex}
+.epanel{background:#fff;width:100%;max-width:520px;height:100%;overflow-y:auto;box-shadow:8px 0 32px rgba(0,0,0,.25);display:flex;flex-direction:column}
+.ehdr{background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);flex-shrink:0}
+.ehdr h3{color:#fff;font-size:15px;font-weight:500}
+.elock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center}
+.elock h4{font-size:18px;font-weight:500;margin-bottom:8px}
+.elock p{font-size:13px;color:#666;margin-bottom:1.5rem}
+.ebody{flex:1;padding:1.5rem;display:none}
+.enav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:0.5px solid #eee}
+.enav button{padding:5px 12px;border:0.5px solid #ccc;background:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:#666}
+.enav button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.esec{display:none}.esec.active{display:block}
+.cg{margin-bottom:1.5rem}
+.cg h4{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:0.5px solid #eee}
+.crow{display:flex;align-items:center;gap:12px;padding:.6rem 0;border-bottom:0.5px solid #eee}
+.crow:last-child{border-bottom:none}
+.ci{flex:1}.cl{font-size:13px;font-weight:500}.cd{font-size:11px;color:#999;margin-top:1px}
+.cc{flex-shrink:0;display:flex;align-items:center;gap:6px}
+.cc input[type=color]{width:36px;height:28px;padding:2px;border-radius:4px;cursor:pointer;border:0.5px solid #ccc}
+.cc input[type=range]{width:90px;border:none;box-shadow:none}
+.cc select,.cc input[type=text]{font-size:12px;padding:5px 8px;width:auto}
+.cc input[type=text]{width:185px}
+.csw{width:20px;height:20px;border-radius:3px;border:0.5px solid #ccc;flex-shrink:0}
+.szv{font-size:11px;width:30px;text-align:right;color:#999}
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--navy);color:#fff;font-size:13px;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;border:1px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{opacity:1}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<nav class="nav">
+  <div class="nav-brand"><div class="seal">VA</div><span id="nb">Virginia Civic Action Hub</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPanel('citizen',this)">Citizen Portal</button>
+    <button class="nav-tab" onclick="showPanel('admin',this)">🔒 Admin</button>
+    <button class="nav-tab" onclick="showPanel('listserv',this)">🔒 Listserv</button>
+  </div>
+</nav>
+<div class="main">
+
+<!-- CITIZEN PANEL -->
+<div class="panel active" id="panel-citizen">
+  <div class="sh"><h2 id="ch">Make your voice heard in Richmond</h2><p>Find your legislators and send a pre-written email about bills that matter — in under 60 seconds.</p></div>
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><span>Find your rep</span></div>
+    <div class="sarrow">→</div>
+    <div class="step"><div class="snum">2</div><span>Pick a bill</span></div>
+    <div class="sarrow">→</div>
+    <div class="step"><div class="snum">3</div><span>Send your email</span></div>
+  </div>
+  <div class="hero">
+    <h2>Step 1 — Find your Virginia legislators</h2>
+    <p>Select your city or county to see your Senate and House of Delegates members.</p>
+    <div class="loc-wrap"><select id="citizen-loc" onchange="findLegislators()"><option value="">Select your city or county…</option></select></div>
+  </div>
+  <div id="leg-section" style="display:none">
+    <h3 style="font-size:14px;font-weight:500;margin-bottom:10px;color:#666;text-transform:uppercase;letter-spacing:.04em">Your legislators</h3>
+    <div class="leg-grid" id="leg-results"></div>
+  </div>
+  <div id="bills-section" style="display:none">
+    <h3 style="font-size:14px;font-weight:500;margin-bottom:10px;color:#666;text-transform:uppercase;letter-spacing:.04em">Step 2 — Bills we're working on</h3>
+    <div class="frow">
+      <input type="text" placeholder="Search bills…" oninput="filterBills(this.value)" id="bill-search">
+      <select onchange="filterBills(document.getElementById('bill-search').value,this.value)" id="topic-filter"><option value="">All topics</option></select>
+    </div>
+    <div id="bill-list"></div>
+  </div>
+  <div id="email-section"></div>
+  <div class="signup-banner">
+    <div><h3>Stay in the loop</h3><p>Get action alerts when new bills need your voice.</p></div>
+    <div class="sf">
+      <input type="text" id="signup-name" placeholder="Your name">
+      <input type="email" id="signup-email" placeholder="Your email address">
+      <button class="btn btn-gold" onclick="citizenSignup()">Join listserv</button>
+    </div>
+  </div>
+  <div id="signup-msg" style="font-size:13px;color:#1b5e20;text-align:center;margin-top:10px;display:none"></div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="panel" id="panel-admin">
+  <div class="lock-wall" id="admin-lock">
+    <div class="lock-box">
+      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
+      <h3>Admin access</h3><p>Sign in with your administrator account.</p>
+      <div class="fg" style="margin-bottom:10px"><div><label>Email</label><input type="email" id="admin-email" placeholder="your@email.com"></div></div>
+      <div class="fg" style="margin-bottom:14px"><div><label>Password</label><input type="password" id="admin-pw" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"></div></div>
+      <button class="btn btn-navy" style="width:100%;justify-content:center" onclick="adminLogin()" id="admin-login-btn">Sign in</button>
+      <div class="lock-err" id="admin-err">Incorrect email or password.</div>
+    </div>
+  </div>
+  <div id="admin-content" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <div class="sh" style="margin-bottom:0"><h2>Admin panel</h2><p>Changes save to Supabase instantly.</p></div>
+      <button class="btn btn-sm btn-red" onclick="adminLogout()">🔒 Sign out</button>
+    </div>
+    <div class="atabs">
+      <button class="atab active" onclick="switchTab('templates',this)">📋 Templates</button>
+      <button class="atab" onclick="switchTab('topics',this)">🏷️ Topics</button>
+      <button class="atab" onclick="switchTab('legislators',this)">👤 Legislators</button>
+    </div>
+
+    <!-- TEMPLATES TAB -->
+    <div class="asec active" id="atab-templates">
+      <div class="card">
+        <div class="card-title" id="tform-title">Create new template</div>
+        <div class="fg-gold">
+          <div class="fg-label">📋 Bill info</div>
+          <div class="fg fg2" style="margin-bottom:10px"><div><label>Bill number</label><input type="text" id="f-bill" placeholder="e.g. HB 1234"></div><div><label>Topic</label><select id="f-topic"></select></div></div>
+          <div><label>Bill title</label><input type="text" id="f-title" placeholder="e.g. Clean Energy Transition Act"></div>
+          <div style="margin-top:10px"><label>Citizen-facing description</label><textarea id="f-desc" rows="2" placeholder="Why this bill matters…"></textarea></div>
+        </div>
+        <div class="fg-gold">
+          <div class="fg-label">👤 Patrons &amp; committee members</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <input type="text" id="patron-inp" placeholder="Legislator name…" style="flex:1;min-width:150px">
+            <select id="patron-type" style="width:160px"><option value="patron">Primary patron</option><option value="committee">Committee member</option></select>
+            <button class="btn btn-navy btn-sm" onclick="addPatron()">+ Add</button>
+          </div>
+          <div id="patron-chips"></div>
+        </div>
+        <div class="fg-gold">
+          <div class="fg-label">✉️ Email template</div>
+          <div style="margin-bottom:10px"><label>Subject line</label><input type="text" id="f-subj" placeholder="Please Support HB 1234 – Title"></div>
+          <div><label>Body — use {LEGISLATOR_NAME} and {YOUR_NAME}</label><textarea id="f-body" rows="9" placeholder="Dear {LEGISLATOR_NAME},&#10;&#10;…&#10;&#10;Sincerely,&#10;{YOUR_NAME}"></textarea></div>
+        </div>
+        <div class="fg-gold">
+          <div class="fg-label">⚙️ Settings</div>
+          <div class="fg fg2">
+            <div><label>Status</label><select id="f-status"><option value="active">Active (visible)</option><option value="draft">Draft (hidden)</option></select></div>
+            <div><label>Priority (1 = top)</label><input type="number" id="f-priority" value="1" min="1"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-navy" onclick="saveTemplate()" id="save-tmpl-btn">💾 Save template</button>
+          <button class="btn" onclick="clearTForm()">✕ Clear</button>
+        </div>
+        <div id="save-msg" style="margin-top:10px;font-size:13px;color:#1b5e20;display:none">✓ Template saved!</div>
+      </div>
+      <div class="sh" style="margin-top:1.5rem"><h2>Existing templates</h2><p id="tmpl-count"></p></div>
+      <div id="template-list"></div>
+    </div>
+
+    <!-- TOPICS TAB -->
+    <div class="asec" id="atab-topics">
+      <div class="card">
+        <div class="card-title">Manage topics</div>
+        <p style="font-size:13px;color:#666;margin-bottom:12px">Changes save to Supabase immediately.</p>
+        <div id="topic-pills"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <input type="text" id="new-topic" placeholder="New topic name…" style="flex:1;max-width:280px" onkeydown="if(event.key==='Enter')addTopic()">
+          <button class="btn btn-navy btn-sm" onclick="addTopic()">+ Add topic</button>
+        </div>
+        <div id="topic-msg" style="font-size:12px;color:#1b5e20;margin-top:8px;display:none">✓ Saved.</div>
+      </div>
+    </div>
+
+    <!-- LEGISLATORS TAB -->
+    <div class="asec" id="atab-legislators">
+      <div class="notice" style="margin-bottom:1rem">164th Virginia General Assembly (2026). All Senate emails updated to the verified <code>senator[lastname]@senate.virginia.gov</code> format. Add/remove entries below — saves instantly.</div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Add legislator</div>
+        <div class="fg fg2" style="margin-bottom:10px">
+          <div><label>Locality</label><select id="leg-loc-sel"></select></div>
+          <div><label>Chamber</label><select id="leg-chamber"><option value="senate">Senate</option><option value="house">House of Delegates</option></select></div>
+        </div>
+        <div class="fg fg3" style="margin-bottom:10px">
+          <div><label>Full name</label><input type="text" id="leg-name" placeholder="Jane Smith"></div>
+          <div><label>District (e.g. SD 10)</label><input type="text" id="leg-role" placeholder="SD 10"></div>
+          <div><label>Email</label><input type="text" id="leg-email" placeholder="senator…@senate.virginia.gov"></div>
+        </div>
+        <button class="btn btn-navy btn-sm" onclick="addLeg()">+ Add legislator</button>
+        <div id="leg-add-msg" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Added and saved.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Current legislators</div>
+        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+          <input type="text" placeholder="Search name or locality…" oninput="renderLegEditor(this.value)" id="leg-search" style="flex:1;min-width:150px">
+          <select onchange="renderLegEditor(document.getElementById('leg-search').value,this.value)" id="leg-cf" style="width:150px"><option value="">All chambers</option><option value="senate">Senate</option><option value="house">House</option></select>
+        </div>
+        <div class="leg-wrap" id="leg-editor"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LISTSERV PANEL -->
+<div class="panel" id="panel-listserv">
+  <div class="lock-wall" id="listserv-lock">
+    <div class="lock-box">
+      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
+      <h3>Listserv access</h3><p>Sign in with your administrator account.</p>
+      <div class="fg" style="margin-bottom:10px"><div><label>Email</label><input type="email" id="ls-email" placeholder="your@email.com"></div></div>
+      <div class="fg" style="margin-bottom:14px"><div><label>Password</label><input type="password" id="ls-pw" placeholder="Password" onkeydown="if(event.key==='Enter')lsLogin()"></div></div>
+      <button class="btn btn-navy" style="width:100%;justify-content:center" onclick="lsLogin()" id="ls-login-btn">Sign in</button>
+      <div class="lock-err" id="ls-err">Incorrect email or password.</div>
+    </div>
+  </div>
+  <div id="listserv-content" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <div class="sh" style="margin-bottom:0"><h2>Listserv &amp; outreach</h2><p>All data stored securely in Supabase.</p></div>
+      <button class="btn btn-sm btn-red" onclick="lsLogout()">🔒 Sign out</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Citizen portal link</div>
+      <p style="font-size:13px;color:#666;margin-bottom:10px">Share this link — citizens click it to find their rep and email them.</p>
+      <div class="share-row"><input type="text" id="share-link" value="https://yourusername.github.io/your-repo" readonly style="flex:1"><button class="btn btn-gold btn-sm" onclick="copyLink()">Copy</button></div>
+      <div id="copy-ok" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Copied!</div>
+      <p style="font-size:12px;color:#999;margin-top:8px">⚙ Update this URL in the Site Editor (⚙ button in footer) once you have your GitHub Pages address.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Compose action alert</div>
+      <div class="notice">Opens a draft in your email client addressed to all subscribers.</div>
+      <div class="fg" style="margin-bottom:12px"><div><label>Subject</label><input type="text" id="alert-subj" value="Action needed: Important bills in the Virginia General Assembly"></div></div>
+      <div class="fg" style="margin-bottom:12px"><div><label>Message body</label><textarea id="alert-body" rows="10">Hello,
+
+We need your help this week! Several important bills are being considered in the Virginia General Assembly and your voice matters.
+
+The important bills include:
+- [BILL NUMBER] – [BILL TITLE]: [Brief sentence on why it matters]
+- [BILL NUMBER] – [BILL TITLE]: [Brief sentence on why it matters]
+
+Click the link below to find your legislator and send a pre-written email in under a minute.</textarea></div></div>
+      <div style="font-size:12px;color:#666;margin-bottom:1rem;padding:8px 10px;background:#f5f5f5;border-radius:6px;border-left:3px solid var(--gold)">✏️ Fill in bill details above before sending. The portal link is appended automatically.</div>
+      <button class="btn btn-navy" onclick="composeAlert()">✉️ Open in email client</button>
+    </div>
+    <div class="sh" style="margin-top:1.5rem"><h2>Subscribers</h2><p id="sub-count"></p></div>
+    <div class="card">
+      <div style="display:flex;gap:10px;margin-bottom:1rem">
+        <input type="email" id="new-email" placeholder="subscriber@email.com" style="flex:1">
+        <input type="text" id="new-name" placeholder="Name (optional)" style="flex:1">
+        <button class="btn btn-navy" onclick="addSub()">+ Add</button>
+      </div>
+      <div id="sub-list" class="sub-list"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fl">
+    <div class="flogo">
+      <span class="fll" style="color:#c0392b">S</span>
+      <span class="fll" style="color:#2e4a8a">E</span>
+      <span class="fll" style="color:#3a7a3a">R</span>
+      <span class="fll" style="color:#c8a84b">V</span>
+      <span style="font-size:12px;color:var(--gold);margin-left:3px;align-self:flex-end;padding-bottom:5px;font-family:Georgia,serif">at UVA</span>
+    </div>
+    <div class="fdiv"></div>
+    <div>
+      <div style="color:rgba(255,255,255,.75);font-weight:500;font-size:12px">Student Environmental Reform &amp; Advocacy</div>
+      <div class="ftag" id="ftag">Empowering civic action at the University of Virginia</div>
+    </div>
+  </div>
+  <div class="fr">
+    <div class="flinks"><div style="color:rgba(255,255,255,.5)">Virginia Civic Action Hub</div><div><a href="#" id="furl">vacivicaction.org</a></div></div>
+    <button class="secret" onclick="openEditor()" title="Site editor">⚙</button>
+  </div>
+</footer>
+
+<!-- SITE EDITOR -->
+<div class="emodal" id="editor-modal">
+  <div class="epanel">
+    <div class="ehdr"><h3>⚙ Site Editor</h3><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeEditor()">✕ Close</button></div>
+    <div class="elock" id="elock">
+      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
+      <h4>Editor access</h4><p>Sign in with your admin account to make style changes.</p>
+      <div class="fg" style="margin-bottom:10px;width:100%;max-width:300px"><div><label>Email</label><input type="email" id="e-email" placeholder="your@email.com"></div></div>
+      <div class="fg" style="margin-bottom:14px;width:100%;max-width:300px"><div><label>Password</label><input type="password" id="e-pw" placeholder="Password" onkeydown="if(event.key==='Enter')editorLogin()"></div></div>
+      <button class="btn btn-navy" style="width:100%;max-width:300px;justify-content:center" onclick="editorLogin()">Sign in</button>
+      <div id="e-err" style="font-size:12px;color:#a32d2d;margin-top:8px;display:none">Incorrect email or password.</div>
+    </div>
+    <div class="ebody" id="ebody">
+      <div class="enav">
+        <button class="active" onclick="eTab('typ',this)">Typography</button>
+        <button onclick="eTab('col',this)">Colors</button>
+        <button onclick="eTab('txt',this)">Page text</button>
+      </div>
+      <div class="esec active" id="etab-typ">
+        <div class="cg"><h4>Font &amp; size</h4>
+          <div class="crow"><div class="ci"><div class="cl">Font family</div></div><div class="cc"><select onchange="document.body.style.fontFamily=this.value"><option value="">System default</option><option value="Georgia,serif">Georgia</option><option value="'Times New Roman',serif">Times New Roman</option><option value="Verdana,sans-serif">Verdana</option><option value="Arial,sans-serif">Arial</option></select></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Base font size</div></div><div class="cc"><input type="range" min="12" max="20" value="14" oninput="document.body.style.fontSize=this.value+'px';document.getElementById('szv').textContent=this.value+'px'"><span class="szv" id="szv">14px</span></div></div>
+        </div>
+        <div class="cg"><h4>Text colors</h4>
+          <div class="crow"><div class="ci"><div class="cl">Heading color</div></div><div class="cc"><span class="csw" id="sw-h" style="background:#1a1a1a"></span><input type="color" value="#1a1a1a" oninput="document.querySelectorAll('.sh h2,h2').forEach(e=>e.style.color=this.value);document.getElementById('sw-h').style.background=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Body text</div></div><div class="cc"><span class="csw" id="sw-b" style="background:#1a1a1a"></span><input type="color" value="#1a1a1a" oninput="document.body.style.color=this.value;document.getElementById('sw-b').style.background=this.value"></div></div>
+        </div>
+      </div>
+      <div class="esec" id="etab-col">
+        <div class="cg"><h4>Brand colors</h4>
+          <div class="crow"><div class="ci"><div class="cl">Navy</div><div class="cd">Nav, buttons, hero background</div></div><div class="cc"><span class="csw" id="sw-n" style="background:#1a2e4a"></span><input type="color" value="#1a2e4a" oninput="applyNavy(this.value);document.getElementById('sw-n').style.background=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Gold</div><div class="cd">Accents, borders, highlights</div></div><div class="cc"><span class="csw" id="sw-g" style="background:#c8a84b"></span><input type="color" value="#c8a84b" oninput="applyGold(this.value);document.getElementById('sw-g').style.background=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Card background</div></div><div class="cc"><span class="csw" id="sw-c" style="background:#ffffff"></span><input type="color" value="#ffffff" oninput="document.querySelectorAll('.card,.bill-card,.leg-card,.email-box,.tmpl-card').forEach(e=>e.style.background=this.value);document.getElementById('sw-c').style.background=this.value"></div></div>
+        </div>
+      </div>
+      <div class="esec" id="etab-txt">
+        <div class="cg"><h4>Key text</h4>
+          <div class="crow"><div class="ci"><div class="cl">Site name (nav)</div></div><div class="cc"><input type="text" value="Virginia Civic Action Hub" oninput="document.getElementById('nb').textContent=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Page heading</div></div><div class="cc"><input type="text" value="Make your voice heard in Richmond" oninput="document.getElementById('ch').textContent=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Portal URL</div><div class="cd">Update once GitHub Pages is live</div></div><div class="cc"><input type="text" id="portal-url-inp" value="https://yourusername.github.io/your-repo" oninput="document.getElementById('share-link').value=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Footer tagline</div></div><div class="cc"><input type="text" value="Empowering civic action at the University of Virginia" oninput="document.getElementById('ftag').textContent=this.value"></div></div>
+        </div>
+        <button class="btn btn-sm btn-red" onclick="if(confirm('Reset all styles?')){location.reload()}">↺ Reset styles</button>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1" onclick="closeEditor()"></div>
+</div>
+<script>
+// ── SUPABASE ──
+const { createClient } = supabase;
+const sb = createClient(
+  'https://hccfprkptttihiyvrpom.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjY2ZwcmtwdHR0aWhpeXZycG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTk5MDAsImV4cCI6MjA5OTM3NTkwMH0.mZn5ohsYuvqnM5y2hc5-N3K-Dm84WpRoBKgaqLTKYOg'
+);
+
+// ── TOAST ──
+function toast(msg, dur=2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function showMsg(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2500);
+}
+
+// ── AUTH ──
+let currentUser = null;
+let adminUnlocked = false;
+let lsUnlocked = false;
+
+async function adminLogin() {
+  const btn = document.getElementById('admin-login-btn');
+  btn.innerHTML = '<span class="spinner"></span>Signing in…';
+  btn.disabled = true;
+  const email = document.getElementById('admin-email').value.trim();
+  const pw = document.getElementById('admin-pw').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  btn.innerHTML = 'Sign in'; btn.disabled = false;
+  if (error) { document.getElementById('admin-err').style.display = 'block'; return; }
+  currentUser = data.user; adminUnlocked = true;
+  document.getElementById('admin-err').style.display = 'none';
+  document.getElementById('admin-lock').style.display = 'none';
+  document.getElementById('admin-content').style.display = 'block';
+  loadAdminData();
+}
+
+async function adminLogout() {
+  await sb.auth.signOut(); currentUser = null; adminUnlocked = false;
+  document.getElementById('admin-lock').style.display = 'flex';
+  document.getElementById('admin-content').style.display = 'none';
+  document.getElementById('admin-email').value = '';
+  document.getElementById('admin-pw').value = '';
+}
+
+async function lsLogin() {
+  const btn = document.getElementById('ls-login-btn');
+  btn.innerHTML = '<span class="spinner"></span>Signing in…'; btn.disabled = true;
+  const email = document.getElementById('ls-email').value.trim();
+  const pw = document.getElementById('ls-pw').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  btn.innerHTML = 'Sign in'; btn.disabled = false;
+  if (error) { document.getElementById('ls-err').style.display = 'block'; return; }
+  currentUser = data.user; lsUnlocked = true;
+  document.getElementById('ls-err').style.display = 'none';
+  document.getElementById('listserv-lock').style.display = 'none';
+  document.getElementById('listserv-content').style.display = 'block';
+  loadSubscribers();
+}
+
+async function lsLogout() {
+  await sb.auth.signOut(); currentUser = null; lsUnlocked = false;
+  document.getElementById('listserv-lock').style.display = 'flex';
+  document.getElementById('listserv-content').style.display = 'none';
+  document.getElementById('ls-email').value = '';
+  document.getElementById('ls-pw').value = '';
+}
+
+async function editorLogin() {
+  const email = document.getElementById('e-email').value.trim();
+  const pw = document.getElementById('e-pw').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  if (error) { document.getElementById('e-err').style.display = 'block'; return; }
+  currentUser = data.user;
+  document.getElementById('e-err').style.display = 'none';
+  document.getElementById('elock').style.display = 'none';
+  document.getElementById('ebody').style.display = 'block';
+}
+
+// Restore session on page load
+async function restoreSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { currentUser = session.user; }
+}
+
+// ── NAV ──
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).style.display = 'block';
+  btn.classList.add('active');
+  if (name === 'admin' && adminUnlocked) {
+    document.getElementById('admin-lock').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+  }
+  if (name === 'listserv' && lsUnlocked) {
+    document.getElementById('listserv-lock').style.display = 'none';
+    document.getElementById('listserv-content').style.display = 'block';
+  }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.asec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(t => t.classList.remove('active'));
+  document.getElementById('atab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'legislators') renderLegEditor();
+}
+
+// ── EDITOR ──
+function openEditor() { document.getElementById('editor-modal').classList.add('open'); }
+function closeEditor() { document.getElementById('editor-modal').classList.remove('open'); }
+function eTab(name, btn) {
+  document.querySelectorAll('.esec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.enav button').forEach(t => t.classList.remove('active'));
+  document.getElementById('etab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function applyNavy(v) {
+  document.documentElement.style.setProperty('--navy', v);
+  document.querySelector('.nav').style.background = v;
+  document.querySelectorAll('.hero').forEach(e => e.style.background = v);
+  document.querySelectorAll('.btn-navy').forEach(e => { e.style.background = v; e.style.borderColor = v; });
+  document.querySelector('footer').style.background = v;
+}
+function applyGold(v) {
+  document.documentElement.style.setProperty('--gold', v);
+  document.querySelector('footer').style.borderTopColor = v;
+  document.querySelector('.nav').style.borderBottomColor = v;
+  document.querySelectorAll('.btn-gold').forEach(e => { e.style.background = v; e.style.borderColor = v; });
+}
+
+// ── TOPICS ──
+let topics = ['Gun Reform','Education','Economic Justice','Environmental Justice','Healthcare','Criminal Justice'];
+let topicsId = null;
+let currentPatrons = [];
+
+async function loadTopics() {
+  const { data } = await sb.from('topics').select('*').limit(1).maybeSingle();
+  if (data) { topics = data.list; topicsId = data.id; }
+  else {
+    const { data: ins } = await sb.from('topics').insert({ list: topics }).select().single();
+    if (ins) topicsId = ins.id;
+  }
+  renderTopicSelects();
+}
+
+function renderTopicPills() {
+  document.getElementById('topic-pills').innerHTML = topics.map((t,i) =>
+    `<span class="pill">${t}<button onclick="removeTopic(${i})">×</button></span>`).join('');
+}
+
+async function addTopic() {
+  const inp = document.getElementById('new-topic');
+  const v = inp.value.trim();
+  if (!v || topics.includes(v)) return;
+  topics.push(v); inp.value = '';
+  await saveTopics();
+  renderTopicPills(); renderTopicSelects(); showMsg('topic-msg');
+}
+
+async function removeTopic(i) {
+  topics.splice(i, 1);
+  await saveTopics();
+  renderTopicPills(); renderTopicSelects(); showMsg('topic-msg');
+}
+
+async function saveTopics() {
+  if (topicsId) {
+    await sb.from('topics').update({ list: topics }).eq('id', topicsId);
+  } else {
+    const { data } = await sb.from('topics').insert({ list: topics }).select().single();
+    if (data) topicsId = data.id;
+  }
+  toast('✓ Topics saved');
+}
+
+function renderTopicSelects() {
+  ['f-topic','topic-filter'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const prev = el.value, isF = id === 'topic-filter';
+    el.innerHTML = (isF ? '<option value="">All topics</option>' : '') +
+      topics.map(t => `<option value="${t}">${t}</option>`).join('');
+    if (prev && topics.includes(prev)) el.value = prev;
+  });
+}
+
+// ── PATRONS ──
+function addPatron() {
+  const n = document.getElementById('patron-inp').value.trim();
+  const t = document.getElementById('patron-type').value;
+  if (!n) return;
+  currentPatrons.push({ name: n, type: t });
+  document.getElementById('patron-inp').value = '';
+  renderPatronChips();
+}
+function removePatron(i) { currentPatrons.splice(i, 1); renderPatronChips(); }
+function renderPatronChips() {
+  document.getElementById('patron-chips').innerHTML = currentPatrons.map((p, i) =>
+    `<span class="pchip"><span class="pt ${p.type==='patron'?'pt-p':'pt-c'}">${p.type==='patron'?'Patron':'Cmte'}</span>${p.name}<button onclick="removePatron(${i})">×</button></span>`
+  ).join('');
+}
+
+// ── LEGISLATORS DATA ──
+const BASE_LEG = {
+  'Accomack County':{senate:[{name:'Bill DeSteph',role:'SD 20',email:'senatordesteph@senate.virginia.gov',initials:'BD'}],house:[{name:'Robert Bloxom',role:'HD 100',email:'DelRBloxom@house.virginia.gov',initials:'RB'}]},
+  'Albemarle County':{senate:[{name:'R. Creigh Deeds',role:'SD 11',email:'senatordeeds@senate.virginia.gov',initials:'CD'}],house:[{name:'Katrina Callsen',role:'HD 54',email:'DelKCallsen@house.virginia.gov',initials:'KC'},{name:'Amy Laufer',role:'HD 55',email:'DelALaufer@house.virginia.gov',initials:'AL'}]},
+  'Alexandria':{senate:[{name:'Elizabeth Bennett-Parker',role:'SD 39',email:'senatorbennett-parker@senate.virginia.gov',initials:'EB'}],house:[{name:'Charniele Herring',role:'HD 4',email:'DelCHerring@house.virginia.gov',initials:'CH'},{name:'Kirk McPike',role:'HD 5',email:'DelKMcPike@house.virginia.gov',initials:'KM'},{name:'Alfonso Lopez',role:'HD 3',email:'DelALopez@house.virginia.gov',initials:'AL'}]},
+  'Alleghany County':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Amelia County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Lee Ware',role:'HD 72',email:'DelLWare@house.virginia.gov',initials:'LW'}]},
+  'Amherst County':{senate:[{name:'R. Creigh Deeds',role:'SD 11',email:'senatordeeds@senate.virginia.gov',initials:'CD'}],house:[{name:'Timothy Griffin',role:'HD 53',email:'DelTGriffin@house.virginia.gov',initials:'TG'}]},
+  'Arlington County':{senate:[{name:'Barbara Favola',role:'SD 40',email:'senatorfavola@senate.virginia.gov',initials:'BF'}],house:[{name:'Patrick Hope',role:'HD 1',email:'DelPHope@house.virginia.gov',initials:'PH'},{name:'Adele McClure',role:'HD 2',email:'DelAMcClure@house.virginia.gov',initials:'AM'},{name:'Alfonso Lopez',role:'HD 3',email:'DelALopez@house.virginia.gov',initials:'AL'}]},
+  'Augusta County':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'},{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'},{name:'Ellen McLaughlin',role:'HD 36',email:'DelEMcLaughlin@house.virginia.gov',initials:'EM'},{name:'Chris Runion',role:'HD 35',email:'DelCRunion@house.virginia.gov',initials:'CR'}]},
+  'Bath County':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'}],house:[{name:'Chris Runion',role:'HD 35',email:'DelCRunion@house.virginia.gov',initials:'CR'}]},
+  'Bedford County':{senate:[{name:'Mark J. Peake',role:'SD 8',email:'senatorpeake@senate.virginia.gov',initials:'MP'}],house:[{name:'Eric Zehr',role:'HD 51',email:'DelEZehr@house.virginia.gov',initials:'EZ'}]},
+  'Bland County':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Will Morefield',role:'HD 43',email:'DelJMorefield@house.virginia.gov',initials:'WM'}]},
+  'Botetourt County':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Bristol':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:"Israel O'Quinn",role:'HD 44',email:'DeliOquinn@house.virginia.gov',initials:'IO'}]},
+  'Brunswick County':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Howard Wachsmann',role:'HD 83',email:'DelOWachsmann@house.virginia.gov',initials:'HW'}]},
+  'Buchanan County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Will Morefield',role:'HD 43',email:'DelJMorefield@house.virginia.gov',initials:'WM'}]},
+  'Buena Vista':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Campbell County':{senate:[{name:'Mark J. Peake',role:'SD 8',email:'senatorpeake@senate.virginia.gov',initials:'MP'}],house:[{name:'Wendell Walker',role:'HD 52',email:'DelWWalker@house.virginia.gov',initials:'WW'},{name:'Eric Zehr',role:'HD 51',email:'DelEZehr@house.virginia.gov',initials:'EZ'}]},
+  'Caroline County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'},{name:'Nicole Cole',role:'HD 66',email:'DelNCole@house.virginia.gov',initials:'NC'}]},
+  'Carroll County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Wren Williams',role:'HD 47',email:'DelWWilliams@house.virginia.gov',initials:'WW'}]},
+  'Charles City County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Delores McQuinn',role:'HD 81',email:'DelDMcQuinn@house.virginia.gov',initials:'DM'}]},
+  'Charlotte County':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Thomas Wright',role:'HD 50',email:'DelTWright@house.virginia.gov',initials:'TW'}]},
+  'Charlottesville':{senate:[{name:'R. Creigh Deeds',role:'SD 11',email:'senatordeeds@senate.virginia.gov',initials:'CD'}],house:[{name:'Katrina Callsen',role:'HD 54',email:'DelKCallsen@house.virginia.gov',initials:'KC'}]},
+  'Chesapeake':{senate:[{name:'L. Louise Lucas',role:'SD 18',email:'senatorlucas@senate.virginia.gov',initials:'LL'},{name:'Christie New Craig',role:'SD 19',email:'senatorcraig@senate.virginia.gov',initials:'CN'}],house:[{name:'Jay Leftwich',role:'HD 90',email:'DelJLeftwich@house.virginia.gov',initials:'JL'},{name:'Cliff Hayes',role:'HD 91',email:'DelCHayes@house.virginia.gov',initials:'CH'},{name:'Bonita Anthony',role:'HD 92',email:'DelBAnthony@house.virginia.gov',initials:'BA'},{name:'Karen Carnegie',role:'HD 89',email:'DelKCarnegie@house.virginia.gov',initials:'KC'},{name:'Nadarius Clark',role:'HD 84',email:'DelNClark@house.virginia.gov',initials:'NC'}]},
+  'Chesterfield County':{senate:[{name:'Glen H. Sturtevant Jr.',role:'SD 12',email:'senatorsturtevant@senate.virginia.gov',initials:'GS'},{name:'Michael J. Jones',role:'SD 15',email:'senatorjones@senate.virginia.gov',initials:'MJ'}],house:[{name:'Mike Cherry',role:'HD 74',email:'DelMCherry@house.virginia.gov',initials:'MC'},{name:'Debra Gardner',role:'HD 76',email:'DelDGardner@house.virginia.gov',initials:'DG'},{name:'Charlie Schmidt',role:'HD 77',email:'DelCSchmidt@house.virginia.gov',initials:'CS'},{name:'Lee Ware',role:'HD 72',email:'DelLWare@house.virginia.gov',initials:'LW'},{name:'Leslie Mehta',role:'HD 73',email:'DelLMehta@house.virginia.gov',initials:'LM'},{name:'Lindsey Dougherty',role:'HD 75',email:'DelLDougherty@house.virginia.gov',initials:'LD'},{name:'Delores McQuinn',role:'HD 81',email:'DelDMcQuinn@house.virginia.gov',initials:'DM'}]},
+  'Clarke County':{senate:[{name:'Timmy French',role:'SD 1',email:'senatorfrench@senate.virginia.gov',initials:'TF'}],house:[{name:'Delores Oates',role:'HD 31',email:'DelDOates@house.virginia.gov',initials:'DO'}]},
+  'Colonial Heights':{senate:[{name:'Glen H. Sturtevant Jr.',role:'SD 12',email:'senatorsturtevant@senate.virginia.gov',initials:'GS'}],house:[{name:'Mike Cherry',role:'HD 74',email:'DelMCherry@house.virginia.gov',initials:'MC'}]},
+  'Covington':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Craig County':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Culpeper County':{senate:[{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'Karen Hamilton',role:'HD 62',email:'DelKHamilton@house.virginia.gov',initials:'KH'},{name:'Michael Webert',role:'HD 61',email:'DelMWebert@house.virginia.gov',initials:'MW'}]},
+  'Cumberland County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Thomas Garrett',role:'HD 56',email:'DelTGarrett@house.virginia.gov',initials:'TG'}]},
+  'Danville':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Madison Whittle',role:'HD 49',email:'DelMWhittle@house.virginia.gov',initials:'MW'}]},
+  'Dickenson County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Terry Kilgore',role:'HD 45',email:'DelTKilgore@house.virginia.gov',initials:'TK'},{name:'Will Morefield',role:'HD 43',email:'DelJMorefield@house.virginia.gov',initials:'WM'}]},
+  'Dinwiddie County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'},{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Kimberly Pope Adams',role:'HD 82',email:'DelKPopeAdams@house.virginia.gov',initials:'KP'}]},
+  'Emporia':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Howard Wachsmann',role:'HD 83',email:'DelOWachsmann@house.virginia.gov',initials:'HW'}]},
+  'Essex County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Keith Hodges',role:'HD 68',email:'DelKHodges@house.virginia.gov',initials:'KH'}]},
+  'Fairfax City':{senate:[{name:'Saddam Azlan Salim',role:'SD 37',email:'senatorsalim@senate.virginia.gov',initials:'SS'}],house:[{name:'Gretchen Bulova',role:'HD 11',email:'DelGBulova@house.virginia.gov',initials:'GB'}]},
+  'Fairfax County':{senate:[{name:'Scott A. Surovell',role:'SD 34',email:'senatorsurovell@senate.virginia.gov',initials:'SS'},{name:'David W. Marsden',role:'SD 35',email:'senatormarsden@senate.virginia.gov',initials:'DM'},{name:'Stella G. Pekarsky',role:'SD 36',email:'senatorpekarsky@senate.virginia.gov',initials:'SP'},{name:'Saddam Azlan Salim',role:'SD 37',email:'senatorsalim@senate.virginia.gov',initials:'SA'},{name:'Jennifer B. Boysko',role:'SD 38',email:'senatorboysko@senate.virginia.gov',initials:'JB'},{name:'Elizabeth Bennett-Parker',role:'SD 39',email:'senatorbennett-parker@senate.virginia.gov',initials:'EB'},{name:'Jennifer Carroll Foy',role:'SD 33',email:'senatorcarrollfoy@senate.virginia.gov',initials:'JF'}],house:[{name:'Karrie Delaney',role:'HD 9',email:'DelKDelaney@house.virginia.gov',initials:'KD'},{name:'Dan Helmer',role:'HD 10',email:'DelDHelmer@house.virginia.gov',initials:'DH'},{name:'Irene Shin',role:'HD 8',email:'DelIShin@house.virginia.gov',initials:'IS'},{name:'Gretchen Bulova',role:'HD 11',email:'DelGBulova@house.virginia.gov',initials:'GB'},{name:'Holly Seibold',role:'HD 12',email:'DelHSeibold@house.virginia.gov',initials:'HS'},{name:'Marcus Simon',role:'HD 13',email:'DelMSimon@house.virginia.gov',initials:'MS'},{name:'Vivian Watts',role:'HD 14',email:'DelVWatts@house.virginia.gov',initials:'VW'},{name:'Laura Jane Cohen',role:'HD 15',email:'DelLJCohen@house.virginia.gov',initials:'LC'},{name:'Paul Krizek',role:'HD 16',email:'DelPKrizek@house.virginia.gov',initials:'PK'},{name:'Garrett McGuire',role:'HD 17',email:'DelGMcGuire@house.virginia.gov',initials:'GM'},{name:'Kathy Tran',role:'HD 18',email:'DelKTran@house.virginia.gov',initials:'KT'},{name:'Rozia Henson',role:'HD 19',email:'DelRHenson@house.virginia.gov',initials:'RH'},{name:'Karen Keys-Gamarra',role:'HD 7',email:'DelKKeys-Gamarra@house.virginia.gov',initials:'KK'},{name:'Richard Sullivan',role:'HD 6',email:'DelRSullivan@house.virginia.gov',initials:'RS'},{name:'Charniele Herring',role:'HD 4',email:'DelCHerring@house.virginia.gov',initials:'CH'}]},
+  'Falls Church':{senate:[{name:'Saddam Azlan Salim',role:'SD 37',email:'senatorsalim@senate.virginia.gov',initials:'SA'}],house:[{name:'Marcus Simon',role:'HD 13',email:'DelMSimon@house.virginia.gov',initials:'MS'}]},
+  'Fauquier County':{senate:[{name:'Russet W. Perry',role:'SD 31',email:'senatorperry@senate.virginia.gov',initials:'RP'},{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'John McAuliff',role:'HD 30',email:'DelJMcAuliff@house.virginia.gov',initials:'JM'},{name:'Michael Webert',role:'HD 61',email:'DelMWebert@house.virginia.gov',initials:'MW'}]},
+  'Floyd County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Wren Williams',role:'HD 47',email:'DelWWilliams@house.virginia.gov',initials:'WW'}]},
+  'Fluvanna County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Amy Laufer',role:'HD 55',email:'DelALaufer@house.virginia.gov',initials:'AL'},{name:'Thomas Garrett',role:'HD 56',email:'DelTGarrett@house.virginia.gov',initials:'TG'}]},
+  'Franklin City':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Nadarius Clark',role:'HD 84',email:'DelNClark@house.virginia.gov',initials:'NC'}]},
+  'Franklin County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Will Davis',role:'HD 39',email:'DelWDavis@house.virginia.gov',initials:'WD'}]},
+  'Frederick County':{senate:[{name:'Timmy French',role:'SD 1',email:'senatorfrench@senate.virginia.gov',initials:'TF'}],house:[{name:'Delores Oates',role:'HD 31',email:'DelDOates@house.virginia.gov',initials:'DO'},{name:'Bill Wiley',role:'HD 32',email:'DelBWiley@house.virginia.gov',initials:'BW'}]},
+  'Fredericksburg':{senate:[{name:'Tara A. Durant',role:'SD 27',email:'senatordurant@senate.virginia.gov',initials:'TD'}],house:[{name:'Joshua Cole',role:'HD 65',email:'DelJCole@house.virginia.gov',initials:'JC'}]},
+  'Galax':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Wren Williams',role:'HD 47',email:'DelWWilliams@house.virginia.gov',initials:'WW'}]},
+  'Giles County':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Jason Ballard',role:'HD 42',email:'DelJBallard@house.virginia.gov',initials:'JB'}]},
+  'Gloucester County':{senate:[{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'}],house:[{name:'Mark Downey',role:'HD 69',email:'DelMDowney@house.virginia.gov',initials:'MD'}]},
+  'Goochland County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'May Nivar',role:'HD 57',email:'DelMNivar@house.virginia.gov',initials:'MN'}]},
+  'Grayson County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Mitchell Cornett',role:'HD 46',email:'DelMCornett@house.virginia.gov',initials:'MC'}]},
+  'Greene County':{senate:[{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'Karen Hamilton',role:'HD 62',email:'DelKHamilton@house.virginia.gov',initials:'KH'}]},
+  'Greensville County':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Howard Wachsmann',role:'HD 83',email:'DelOWachsmann@house.virginia.gov',initials:'HW'}]},
+  'Halifax County':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Thomas Wright',role:'HD 50',email:'DelTWright@house.virginia.gov',initials:'TW'},{name:'Madison Whittle',role:'HD 49',email:'DelMWhittle@house.virginia.gov',initials:'MW'}]},
+  'Hampton':{senate:[{name:'Mamie E. Locke',role:'SD 23',email:'senatorlocke@senate.virginia.gov',initials:'ML'}],house:[{name:'Jeion Ward',role:'HD 87',email:'DelJWard@house.virginia.gov',initials:'JW'},{name:'Virgil Thornton',role:'HD 86',email:'DelVThornton@house.virginia.gov',initials:'VT'}]},
+  'Hanover County':{senate:[{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'},{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Hyland Fowler',role:'HD 59',email:'DelBFowler@house.virginia.gov',initials:'HF'},{name:'Scott Wyatt',role:'HD 60',email:'DelSWyatt@house.virginia.gov',initials:'SW'}]},
+  'Harrisonburg':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'}],house:[{name:'Tony Wilt',role:'HD 34',email:'DelTWilt@house.virginia.gov',initials:'TW'}]},
+  'Henrico County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'},{name:'Lamont Bagby',role:'SD 14',email:'senatorbagby@senate.virginia.gov',initials:'LB'},{name:'Glen H. Sturtevant Jr.',role:'SD 12',email:'senatorsturtevant@senate.virginia.gov',initials:'GS'},{name:'Schuyler VanValkenburg',role:'SD 16',email:'senatorvanvalkenburg@senate.virginia.gov',initials:'SV'}],house:[{name:'Rodney Willett',role:'HD 58',email:'DelRWillett@house.virginia.gov',initials:'RW'},{name:'May Nivar',role:'HD 57',email:'DelMNivar@house.virginia.gov',initials:'MN'},{name:'Hyland Fowler',role:'HD 59',email:'DelBFowler@house.virginia.gov',initials:'HF'},{name:'Destiny LeVere Bolling',role:'HD 80',email:'DelDLeVereBolling@house.virginia.gov',initials:'DL'},{name:'Delores McQuinn',role:'HD 81',email:'DelDMcQuinn@house.virginia.gov',initials:'DM'}]},
+  'Henry County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Wren Williams',role:'HD 47',email:'DelWWilliams@house.virginia.gov',initials:'WW'},{name:'Eric Phillips',role:'HD 48',email:'DelEPhillips@house.virginia.gov',initials:'EP'}]},
+  'Highland County':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'}],house:[{name:'Chris Runion',role:'HD 35',email:'DelCRunion@house.virginia.gov',initials:'CR'}]},
+  'Hopewell':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Lindsey Dougherty',role:'HD 75',email:'DelLDougherty@house.virginia.gov',initials:'LD'}]},
+  'Isle of Wight County':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Nadarius Clark',role:'HD 84',email:'DelNClark@house.virginia.gov',initials:'NC'}]},
+  'James City County':{senate:[{name:'J.D. Diggs',role:'SD 24',email:'senatordiggs@senate.virginia.gov',initials:'JD'},{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'}],house:[{name:'Jessica Anderson',role:'HD 71',email:'DelJAnderson@house.virginia.gov',initials:'JA'},{name:'Mark Downey',role:'HD 69',email:'DelMDowney@house.virginia.gov',initials:'MD'}]},
+  'King and Queen County':{senate:[{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'},{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Keith Hodges',role:'HD 68',email:'DelKHodges@house.virginia.gov',initials:'KH'}]},
+  'King George County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'}]},
+  'King William County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Keith Hodges',role:'HD 68',email:'DelKHodges@house.virginia.gov',initials:'KH'}]},
+  'Lancaster County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'}]},
+  'Lee County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Terry Kilgore',role:'HD 45',email:'DelTKilgore@house.virginia.gov',initials:'TK'}]},
+  'Lexington':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'}]},
+  'Loudoun County':{senate:[{name:'Russet W. Perry',role:'SD 31',email:'senatorperry@senate.virginia.gov',initials:'RP'},{name:'Kannan Srinivasan',role:'SD 32',email:'senatorsrinivasan@senate.virginia.gov',initials:'KS'}],house:[{name:'Atoosa Reaser',role:'HD 27',email:'DelAReaser@house.virginia.gov',initials:'AR'},{name:'David Reid',role:'HD 28',email:'DelDReid@house.virginia.gov',initials:'DR'},{name:'Fernando Martinez',role:'HD 29',email:'DelMMartinez@house.virginia.gov',initials:'FM'},{name:'John McAuliff',role:'HD 30',email:'DelJMcAuliff@house.virginia.gov',initials:'JM'},{name:'JJ Singh',role:'HD 26',email:'DelJSingh@house.virginia.gov',initials:'JS'}]},
+  'Louisa County':{senate:[{name:'R. Creigh Deeds',role:'SD 11',email:'senatordeeds@senate.virginia.gov',initials:'CD'},{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Hyland Fowler',role:'HD 59',email:'DelBFowler@house.virginia.gov',initials:'HF'},{name:'Amy Laufer',role:'HD 55',email:'DelALaufer@house.virginia.gov',initials:'AL'},{name:'Thomas Garrett',role:'HD 56',email:'DelTGarrett@house.virginia.gov',initials:'TG'}]},
+  'Lunenburg County':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Thomas Wright',role:'HD 50',email:'DelTWright@house.virginia.gov',initials:'TW'}]},
+  'Lynchburg':{senate:[{name:'Mark J. Peake',role:'SD 8',email:'senatorpeake@senate.virginia.gov',initials:'MP'}],house:[{name:'Wendell Walker',role:'HD 52',email:'DelWWalker@house.virginia.gov',initials:'WW'}]},
+  'Madison County':{senate:[{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'Karen Hamilton',role:'HD 62',email:'DelKHamilton@house.virginia.gov',initials:'KH'}]},
+  'Manassas':{senate:[{name:'Danica A. Roem',role:'SD 30',email:'senatorroem@senate.virginia.gov',initials:'DR'}],house:[{name:'HD 20 — Vacant',role:'HD 20',email:'',initials:'??'}]},
+  'Manassas Park':{senate:[{name:'Danica A. Roem',role:'SD 30',email:'senatorroem@senate.virginia.gov',initials:'DR'}],house:[{name:'HD 20 — Vacant',role:'HD 20',email:'',initials:'??'}]},
+  'Martinsville':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Eric Phillips',role:'HD 48',email:'DelEPhillips@house.virginia.gov',initials:'EP'}]},
+  'Mathews County':{senate:[{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'}],house:[{name:'Keith Hodges',role:'HD 68',email:'DelKHodges@house.virginia.gov',initials:'KH'}]},
+  'Mecklenburg County':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Thomas Wright',role:'HD 50',email:'DelTWright@house.virginia.gov',initials:'TW'}]},
+  'Middlesex County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Keith Hodges',role:'HD 68',email:'DelKHodges@house.virginia.gov',initials:'KH'}]},
+  'Montgomery County':{senate:[{name:'David R. Suetterlein',role:'SD 4',email:'senatorsuetterlein@senate.virginia.gov',initials:'DS'},{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Jason Ballard',role:'HD 42',email:'DelJBallard@house.virginia.gov',initials:'JB'},{name:'Lily Franklin',role:'HD 41',email:'DelLFranklin@house.virginia.gov',initials:'LF'}]},
+  'Nelson County':{senate:[{name:'R. Creigh Deeds',role:'SD 11',email:'senatordeeds@senate.virginia.gov',initials:'CD'}],house:[{name:'Timothy Griffin',role:'HD 53',email:'DelTGriffin@house.virginia.gov',initials:'TG'},{name:'Amy Laufer',role:'HD 55',email:'DelALaufer@house.virginia.gov',initials:'AL'}]},
+  'New Kent County':{senate:[{name:'Ryan T. McDougle',role:'SD 26',email:'senatormcdougle@senate.virginia.gov',initials:'RM'}],house:[{name:'Jessica Anderson',role:'HD 71',email:'DelJAnderson@house.virginia.gov',initials:'JA'},{name:'Scott Wyatt',role:'HD 60',email:'DelSWyatt@house.virginia.gov',initials:'SW'}]},
+  'Newport News':{senate:[{name:'Mamie E. Locke',role:'SD 23',email:'senatorlocke@senate.virginia.gov',initials:'ML'},{name:'J.D. Diggs',role:'SD 24',email:'senatordiggs@senate.virginia.gov',initials:'JD'}],house:[{name:'Marcia Price',role:'HD 85',email:'DelMPrice@house.virginia.gov',initials:'MP'},{name:'Shelly Simonds',role:'HD 70',email:'DelSSimonds@house.virginia.gov',initials:'SS'},{name:'Mark Downey',role:'HD 69',email:'DelMDowney@house.virginia.gov',initials:'MD'}]},
+  'Norfolk':{senate:[{name:'Angelia Williams Graves',role:'SD 21',email:'senatorwilliamsgraves@senate.virginia.gov',initials:'AG'},{name:'Bill DeSteph',role:'SD 20',email:'senatordesteph@senate.virginia.gov',initials:'BD'}],house:[{name:'Jackie Glass',role:'HD 93',email:'DelJGlass@house.virginia.gov',initials:'JG'},{name:'Phil Hernandez',role:'HD 94',email:'DelPHernandez@house.virginia.gov',initials:'PH'},{name:'Alex Askew',role:'HD 95',email:'DelAAskew@house.virginia.gov',initials:'AA'},{name:'Bonita Anthony',role:'HD 92',email:'DelBAnthony@house.virginia.gov',initials:'BA'}]},
+  'Norton':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Terry Kilgore',role:'HD 45',email:'DelTKilgore@house.virginia.gov',initials:'TK'}]},
+  'Northampton County':{senate:[{name:'Bill DeSteph',role:'SD 20',email:'senatordesteph@senate.virginia.gov',initials:'BD'}],house:[{name:'Robert Bloxom',role:'HD 100',email:'DelRBloxom@house.virginia.gov',initials:'RB'}]},
+  'Northumberland County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'}]},
+  'Nottoway County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Lee Ware',role:'HD 72',email:'DelLWare@house.virginia.gov',initials:'LW'}]},
+  'Orange County':{senate:[{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'Phillip Scott',role:'HD 63',email:'DelPScott@house.virginia.gov',initials:'PS'},{name:'Karen Hamilton',role:'HD 62',email:'DelKHamilton@house.virginia.gov',initials:'KH'}]},
+  'Page County':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'}],house:[{name:'Justin Pence',role:'HD 33',email:'DelJPence@house.virginia.gov',initials:'JP'}]},
+  'Patrick County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'}],house:[{name:'Wren Williams',role:'HD 47',email:'DelWWilliams@house.virginia.gov',initials:'WW'}]},
+  'Petersburg':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Kimberly Pope Adams',role:'HD 82',email:'DelKPopeAdams@house.virginia.gov',initials:'KP'}]},
+  'Pittsylvania County':{senate:[{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Eric Phillips',role:'HD 48',email:'DelEPhillips@house.virginia.gov',initials:'EP'},{name:'Eric Zehr',role:'HD 51',email:'DelEZehr@house.virginia.gov',initials:'EZ'}]},
+  'Poquoson':{senate:[{name:'J.D. Diggs',role:'SD 24',email:'senatordiggs@senate.virginia.gov',initials:'JD'}],house:[{name:'Virgil Thornton',role:'HD 86',email:'DelVThornton@house.virginia.gov',initials:'VT'}]},
+  'Portsmouth':{senate:[{name:'L. Louise Lucas',role:'SD 18',email:'senatorlucas@senate.virginia.gov',initials:'LL'}],house:[{name:'Don Scott',role:'HD 88',email:'DelDScott@house.virginia.gov',initials:'DS'},{name:'Cliff Hayes',role:'HD 91',email:'DelCHayes@house.virginia.gov',initials:'CH'}]},
+  'Powhatan County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'}],house:[{name:'Lee Ware',role:'HD 72',email:'DelLWare@house.virginia.gov',initials:'LW'}]},
+  'Prince Edward County':{senate:[{name:'Luther H. Cifers III',role:'SD 10',email:'senatorcifers@senate.virginia.gov',initials:'LC'},{name:'Tammy Mulchi',role:'SD 9',email:'senatormulchi@senate.virginia.gov',initials:'TM'}],house:[{name:'Thomas Wright',role:'HD 50',email:'DelTWright@house.virginia.gov',initials:'TW'},{name:'Thomas Garrett',role:'HD 56',email:'DelTGarrett@house.virginia.gov',initials:'TG'}]},
+  'Prince George County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Kimberly Pope Adams',role:'HD 82',email:'DelKPopeAdams@house.virginia.gov',initials:'KP'},{name:'Lindsey Dougherty',role:'HD 75',email:'DelLDougherty@house.virginia.gov',initials:'LD'}]},
+  'Prince William County':{senate:[{name:'Jeremy S. McPike',role:'SD 29',email:'senatormcpike@senate.virginia.gov',initials:'JM'},{name:'Danica A. Roem',role:'SD 30',email:'senatorroem@senate.virginia.gov',initials:'DR'},{name:'Jennifer Carroll Foy',role:'SD 33',email:'senatorcarrollfoy@senate.virginia.gov',initials:'JF'}],house:[{name:'HD 20 — Vacant',role:'HD 20',email:'',initials:'??'},{name:'Josh Thomas',role:'HD 21',email:'DelJThomas@house.virginia.gov',initials:'JT'},{name:'Elizabeth Guzman',role:'HD 22',email:'DelEGuzman@house.virginia.gov',initials:'EG'},{name:'Margaret Franklin',role:'HD 23',email:'DelMFranklin@house.virginia.gov',initials:'MF'},{name:'Luke Torian',role:'HD 24',email:'DelLTorian@house.virginia.gov',initials:'LT'},{name:'Briana Sewell',role:'HD 25',email:'DelBSewell@house.virginia.gov',initials:'BS'},{name:'Rozia Henson',role:'HD 19',email:'DelRHenson@house.virginia.gov',initials:'RH'}]},
+  'Pulaski County':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Jason Ballard',role:'HD 42',email:'DelJBallard@house.virginia.gov',initials:'JB'},{name:'Mitchell Cornett',role:'HD 46',email:'DelMCornett@house.virginia.gov',initials:'MC'}]},
+  'Radford':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Jason Ballard',role:'HD 42',email:'DelJBallard@house.virginia.gov',initials:'JB'}]},
+  'Rappahannock County':{senate:[{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'}],house:[{name:'Michael Webert',role:'HD 61',email:'DelMWebert@house.virginia.gov',initials:'MW'}]},
+  'Richmond City':{senate:[{name:'Lamont Bagby',role:'SD 14',email:'senatorbagby@senate.virginia.gov',initials:'LB'},{name:'Michael J. Jones',role:'SD 15',email:'senatorjones@senate.virginia.gov',initials:'MJ'}],house:[{name:'Betsy Carr',role:'HD 78',email:'DelBCarr@house.virginia.gov',initials:'BC'},{name:'Rae Cousins',role:'HD 79',email:'DelRCousins@house.virginia.gov',initials:'RC'},{name:'Delores McQuinn',role:'HD 81',email:'DelDMcQuinn@house.virginia.gov',initials:'DM'},{name:'Charlie Schmidt',role:'HD 77',email:'DelCSchmidt@house.virginia.gov',initials:'CS'}]},
+  'Richmond County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'}]},
+  'Roanoke City':{senate:[{name:'David R. Suetterlein',role:'SD 4',email:'senatorsuetterlein@senate.virginia.gov',initials:'DS'}],house:[{name:'Sam Rasoul',role:'HD 38',email:'DelSRasoul@house.virginia.gov',initials:'SR'},{name:'Joseph McNamara',role:'HD 40',email:'DelJMcNamara@house.virginia.gov',initials:'JM'}]},
+  'Roanoke County':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'},{name:'David R. Suetterlein',role:'SD 4',email:'senatorsuetterlein@senate.virginia.gov',initials:'DS'}],house:[{name:'Joseph McNamara',role:'HD 40',email:'DelJMcNamara@house.virginia.gov',initials:'JM'},{name:'Lily Franklin',role:'HD 41',email:'DelLFranklin@house.virginia.gov',initials:'LF'},{name:'Will Davis',role:'HD 39',email:'DelWDavis@house.virginia.gov',initials:'WD'}]},
+  'Rockbridge County':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Terry Austin',role:'HD 37',email:'DelTAustin@house.virginia.gov',initials:'TA'},{name:'Ellen McLaughlin',role:'HD 36',email:'DelEMcLaughlin@house.virginia.gov',initials:'EM'}]},
+  'Rockingham County':{senate:[{name:'Mark D. Obenshain',role:'SD 2',email:'senatorobenshain@senate.virginia.gov',initials:'MO'}],house:[{name:'Chris Runion',role:'HD 35',email:'DelCRunion@house.virginia.gov',initials:'CR'},{name:'Tony Wilt',role:'HD 34',email:'DelTWilt@house.virginia.gov',initials:'TW'},{name:'Justin Pence',role:'HD 33',email:'DelJPence@house.virginia.gov',initials:'JP'}]},
+  'Russell County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:"Israel O'Quinn",role:'HD 44',email:'DeliOquinn@house.virginia.gov',initials:'IO'},{name:'Will Morefield',role:'HD 43',email:'DelJMorefield@house.virginia.gov',initials:'WM'}]},
+  'Salem':{senate:[{name:'David R. Suetterlein',role:'SD 4',email:'senatorsuetterlein@senate.virginia.gov',initials:'DS'}],house:[{name:'Joseph McNamara',role:'HD 40',email:'DelJMcNamara@house.virginia.gov',initials:'JM'}]},
+  'Scott County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Terry Kilgore',role:'HD 45',email:'DelTKilgore@house.virginia.gov',initials:'TK'}]},
+  'Shenandoah County':{senate:[{name:'Timmy French',role:'SD 1',email:'senatorfrench@senate.virginia.gov',initials:'TF'}],house:[{name:'Justin Pence',role:'HD 33',email:'DelJPence@house.virginia.gov',initials:'JP'}]},
+  'Smyth County':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Mitchell Cornett',role:'HD 46',email:'DelMCornett@house.virginia.gov',initials:'MC'}]},
+  'Southampton County':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Howard Wachsmann',role:'HD 83',email:'DelOWachsmann@house.virginia.gov',initials:'HW'}]},
+  'Spotsylvania County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'},{name:'Bryce E. Reeves',role:'SD 28',email:'senatorreeves@senate.virginia.gov',initials:'BR'},{name:'Tara A. Durant',role:'SD 27',email:'senatordurant@senate.virginia.gov',initials:'TD'}],house:[{name:'Nicole Cole',role:'HD 66',email:'DelNCole@house.virginia.gov',initials:'NC'},{name:'Phillip Scott',role:'HD 63',email:'DelPScott@house.virginia.gov',initials:'PS'}]},
+  'Stafford County':{senate:[{name:'Jeremy S. McPike',role:'SD 29',email:'senatormcpike@senate.virginia.gov',initials:'JM'},{name:'Tara A. Durant',role:'SD 27',email:'senatordurant@senate.virginia.gov',initials:'TD'}],house:[{name:'Stacey Carroll',role:'HD 64',email:'DelSCarroll@house.virginia.gov',initials:'SC'},{name:'Joshua Cole',role:'HD 65',email:'DelJCole@house.virginia.gov',initials:'JC'},{name:'Margaret Franklin',role:'HD 23',email:'DelMFranklin@house.virginia.gov',initials:'MF'}]},
+  'Staunton':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Ellen McLaughlin',role:'HD 36',email:'DelEMcLaughlin@house.virginia.gov',initials:'EM'}]},
+  'Suffolk':{senate:[{name:'Emily M. Jordan',role:'SD 17',email:'senatorjordan@senate.virginia.gov',initials:'EJ'}],house:[{name:'Karen Carnegie',role:'HD 89',email:'DelKCarnegie@house.virginia.gov',initials:'KC'}]},
+  'Surry County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Kimberly Pope Adams',role:'HD 82',email:'DelKPopeAdams@house.virginia.gov',initials:'KP'}]},
+  'Sussex County':{senate:[{name:'Lashrecse D. Aird',role:'SD 13',email:'senatoraird@senate.virginia.gov',initials:'LA'}],house:[{name:'Howard Wachsmann',role:'HD 83',email:'DelOWachsmann@house.virginia.gov',initials:'HW'}]},
+  'Tazewell County':{senate:[{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Will Morefield',role:'HD 43',email:'DelJMorefield@house.virginia.gov',initials:'WM'}]},
+  'Virginia Beach':{senate:[{name:'Christie New Craig',role:'SD 19',email:'senatorcraig@senate.virginia.gov',initials:'CN'},{name:'Bill DeSteph',role:'SD 20',email:'senatordesteph@senate.virginia.gov',initials:'BD'},{name:'Aaron R. Rouse',role:'SD 22',email:'senatorrouse@senate.virginia.gov',initials:'AR'}],house:[{name:'Robert Bloxom',role:'HD 100',email:'DelRBloxom@house.virginia.gov',initials:'RB'},{name:'Kelly Convirs-Fowler',role:'HD 96',email:'DelKConvirs-Fowler@house.virginia.gov',initials:'KC'},{name:'Michael Feggans',role:'HD 97',email:'DelMFeggans@house.virginia.gov',initials:'MF'},{name:'Andrew Rice',role:'HD 98',email:'DelARice@house.virginia.gov',initials:'AR'},{name:'Anne Ferrell Tata',role:'HD 99',email:'DelAFTata@house.virginia.gov',initials:'AT'},{name:'Alex Askew',role:'HD 95',email:'DelAAskew@house.virginia.gov',initials:'AA'}]},
+  'Warren County':{senate:[{name:'Timmy French',role:'SD 1',email:'senatorfrench@senate.virginia.gov',initials:'TF'}],house:[{name:'Delores Oates',role:'HD 31',email:'DelDOates@house.virginia.gov',initials:'DO'},{name:'Justin Pence',role:'HD 33',email:'DelJPence@house.virginia.gov',initials:'JP'}]},
+  'Washington County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:"Israel O'Quinn",role:'HD 44',email:'DeliOquinn@house.virginia.gov',initials:'IO'}]},
+  'Waynesboro':{senate:[{name:'Christopher T. Head',role:'SD 3',email:'senatorhead@senate.virginia.gov',initials:'CH'}],house:[{name:'Ellen McLaughlin',role:'HD 36',email:'DelEMcLaughlin@house.virginia.gov',initials:'EM'}]},
+  'Westmoreland County':{senate:[{name:'Richard H. Stuart',role:'SD 25',email:'senatorstuart@senate.virginia.gov',initials:'RS'}],house:[{name:'Hillary Kent',role:'HD 67',email:'DelHKent@house.virginia.gov',initials:'HK'}]},
+  'Williamsburg':{senate:[{name:'J.D. Diggs',role:'SD 24',email:'senatordiggs@senate.virginia.gov',initials:'JD'}],house:[{name:'Jessica Anderson',role:'HD 71',email:'DelJAnderson@house.virginia.gov',initials:'JA'}]},
+  'Winchester':{senate:[{name:'Timmy French',role:'SD 1',email:'senatorfrench@senate.virginia.gov',initials:'TF'}],house:[{name:'Bill Wiley',role:'HD 32',email:'DelBWiley@house.virginia.gov',initials:'BW'}]},
+  'Wise County':{senate:[{name:'Todd E. Pillion',role:'SD 6',email:'senatorpillion@senate.virginia.gov',initials:'TP'}],house:[{name:'Terry Kilgore',role:'HD 45',email:'DelTKilgore@house.virginia.gov',initials:'TK'}]},
+  'Wythe County':{senate:[{name:'William M. Stanley Jr.',role:'SD 7',email:'senatorstanley@senate.virginia.gov',initials:'WS'},{name:'T. Travis Hackworth',role:'SD 5',email:'senatorhackworth@senate.virginia.gov',initials:'TH'}],house:[{name:'Mitchell Cornett',role:'HD 46',email:'DelMCornett@house.virginia.gov',initials:'MC'}]},
+  'York County':{senate:[{name:'J.D. Diggs',role:'SD 24',email:'senatordiggs@senate.virginia.gov',initials:'JD'}],house:[{name:'Mark Downey',role:'HD 69',email:'DelMDowney@house.virginia.gov',initials:'MD'},{name:'Virgil Thornton',role:'HD 86',email:'DelVThornton@house.virginia.gov',initials:'VT'}]}
+};
+
+let LEGISLATORS = JSON.parse(JSON.stringify(BASE_LEG));
+let legDbId = null;
+
+async function loadLegislators() {
+  const { data } = await sb.from('legislators').select('*').limit(1).maybeSingle();
+  if (data) { LEGISLATORS = data.data; legDbId = data.id; }
+  else {
+    const { data: ins } = await sb.from('legislators').insert({ data: LEGISLATORS }).select().single();
+    if (ins) legDbId = ins.id;
+  }
+  initLocalityDropdown();
+}
+
+async function saveLeg() {
+  if (legDbId) await sb.from('legislators').update({ data: LEGISLATORS }).eq('id', legDbId);
+  else {
+    const { data } = await sb.from('legislators').insert({ data: LEGISLATORS }).select().single();
+    if (data) legDbId = data.id;
+  }
+  toast('✓ Legislators saved');
+}
+
+function initials(n) { return n.split(' ').filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase(); }
+
+function initLocalityDropdown() {
+  const sel = document.getElementById('citizen-loc');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select your city or county…</option>';
+  Object.keys(LEGISLATORS).sort().forEach(k => {
+    const o = document.createElement('option'); o.value = k; o.textContent = k; sel.appendChild(o);
+  });
+  if (prev && LEGISLATORS[prev]) sel.value = prev;
+}
+
+function renderLegLocality() {
+  const sel = document.getElementById('leg-loc-sel');
+  sel.innerHTML = Object.keys(LEGISLATORS).sort().map(k=>`<option value="${k}">${k}</option>`).join('') +
+    '<option value="__new__">+ New locality…</option>';
+}
+
+async function addLeg() {
+  let loc = document.getElementById('leg-loc-sel').value;
+  if (loc === '__new__') { loc = prompt('New locality name:'); if (!loc) return; if (!LEGISLATORS[loc]) LEGISLATORS[loc]={senate:[],house:[]}; }
+  const name = document.getElementById('leg-name').value.trim();
+  const role = document.getElementById('leg-role').value.trim();
+  const email = document.getElementById('leg-email').value.trim();
+  const chamber = document.getElementById('leg-chamber').value;
+  if (!name || !role) { alert('Name and district required.'); return; }
+  if (!LEGISLATORS[loc]) LEGISLATORS[loc] = { senate:[], house:[] };
+  LEGISLATORS[loc][chamber].push({ name, role, email, initials: initials(name) });
+  ['leg-name','leg-role','leg-email'].forEach(id => document.getElementById(id).value = '');
+  await saveLeg();
+  renderLegLocality(); renderLegEditor(); showMsg('leg-add-msg'); initLocalityDropdown();
+}
+
+async function delLeg(loc, ch, idx) {
+  LEGISLATORS[loc][ch].splice(idx, 1);
+  if (!LEGISLATORS[loc].senate.length && !LEGISLATORS[loc].house.length) delete LEGISLATORS[loc];
+  await saveLeg();
+  renderLegEditor(document.getElementById('leg-search').value, document.getElementById('leg-cf').value);
+  initLocalityDropdown();
+}
+
+function renderLegEditor(filter, chFilter) {
+  filter = (filter||'').toLowerCase();
+  chFilter = chFilter || document.getElementById('leg-cf').value || '';
+  const c = document.getElementById('leg-editor');
+  let html = '';
+  Object.keys(LEGISLATORS).sort().forEach(loc => {
+    const d = LEGISLATORS[loc]; let rows = '';
+    ['senate','house'].forEach(ch => {
+      if (chFilter && chFilter !== ch) return;
+      (d[ch]||[]).forEach((l, i) => {
+        if (filter && !l.name.toLowerCase().includes(filter) && !loc.toLowerCase().includes(filter)) return;
+        const sl = loc.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        rows += `<div class="leg-row"><div class="ln">${l.name}</div><div class="lr">${l.role}</div><span class="lc ${ch==='senate'?'lc-s':'lc-h'}">${ch==='senate'?'Sen':'Del'}</span><button class="btn btn-sm btn-red" onclick="delLeg('${sl}','${ch}',${i})" style="padding:3px 7px;font-size:11px">✕</button></div>`;
+      });
+    });
+    if (!rows) return;
+    html += `<div class="loc-hdr">${loc}</div>${rows}`;
+  });
+  c.innerHTML = html || '<div class="empty"><p>No legislators match.</p></div>';
+}
+
+// ── TEMPLATES ──
+let templates = [];
+let nextTId = 1;
+
+const DEFAULT_TEMPLATES = [
+  {id:1,bill:'HB 1456',title:'Clean Energy Grid Modernization Act',desc:"Updates Virginia's energy grid to support renewable sources and reduce carbon emissions by 2030.",topic:'Environmental Justice',subject:'Please Support HB 1456 – Clean Energy Grid Modernization Act',body:"Dear {LEGISLATOR_NAME},\n\nI am writing as your constituent to urge your strong support for HB 1456, the Clean Energy Grid Modernization Act.\n\nAs a Virginia resident, I have seen the impacts of extreme weather and rising energy costs. HB 1456 would modernize our grid, create clean energy jobs, and set us on a path to meet our climate goals.\n\nI respectfully ask you to support this legislation.\n\nSincerely,\n{YOUR_NAME}",status:'active',priority:1,patrons:[{name:'Sally Hudson',type:'patron'}]},
+  {id:2,bill:'SB 892',title:'Affordable Housing Preservation Act',desc:'Provides funding and protections to preserve and expand affordable housing across Virginia.',topic:'Economic Justice',subject:'Please Support SB 892 – Affordable Housing Preservation Act',body:"Dear {LEGISLATOR_NAME},\n\nI am writing to urge your support for SB 892, the Affordable Housing Preservation Act.\n\nPlease stand with Virginia's working families and vote yes on SB 892.\n\nSincerely,\n{YOUR_NAME}",status:'active',priority:2,patrons:[]},
+  {id:3,bill:'HB 2103',title:'K-12 Mental Health Services Expansion',desc:'Requires every Virginia public school to have access to a licensed counselor.',topic:'Education',subject:'Please Support HB 2103 – Mental Health in Our Schools',body:"Dear {LEGISLATOR_NAME},\n\nI write to urge your support for HB 2103, which would ensure every Virginia student has access to mental health support in school.\n\nPlease vote yes on HB 2103.\n\nThank you,\n{YOUR_NAME}",status:'active',priority:3,patrons:[]}
+];
+
+async function loadTemplates() {
+  const { data } = await sb.from('templates').select('*').order('id');
+  if (data && data.length > 0) {
+    templates = data.map(r => ({ ...r.data, _dbId: r.id }));
+    nextTId = Math.max(...templates.map(t => t.id)) + 1;
+  } else {
+    for (const t of DEFAULT_TEMPLATES) {
+      const { data: r } = await sb.from('templates').insert({ data: t }).select().single();
+      templates.push({ ...t, _dbId: r ? r.id : null });
+    }
+    nextTId = 4;
+  }
+}
+
+async function saveTemplate() {
+  const bill = document.getElementById('f-bill').value.trim();
+  const title = document.getElementById('f-title').value.trim();
+  const body = document.getElementById('f-body').value.trim();
+  if (!bill || !title || !body) { alert('Bill number, title, and email body are required.'); return; }
+  const btn = document.getElementById('save-tmpl-btn');
+  btn.innerHTML = '<span class="spinner"></span>Saving…'; btn.disabled = true;
+  const ft = document.getElementById('tform-title');
+  const editId = ft.dataset.editId;
+  const newT = {
+    id: editId ? parseInt(editId) : nextTId++,
+    bill, title,
+    desc: document.getElementById('f-desc').value.trim(),
+    topic: document.getElementById('f-topic').value,
+    subject: document.getElementById('f-subj').value.trim(),
+    body, status: document.getElementById('f-status').value,
+    priority: parseInt(document.getElementById('f-priority').value) || 99,
+    patrons: [...currentPatrons]
+  };
+  if (editId) {
+    const ex = templates.find(t => t.id === parseInt(editId));
+    if (ex && ex._dbId) {
+      await sb.from('templates').update({ data: newT }).eq('id', ex._dbId);
+      newT._dbId = ex._dbId;
+    }
+    templates = templates.filter(t => t.id !== parseInt(editId));
+    delete ft.dataset.editId; ft.textContent = 'Create new template';
+  } else {
+    const { data: r } = await sb.from('templates').insert({ data: newT }).select().single();
+    if (r) newT._dbId = r.id;
+  }
+  templates.push(newT);
+  currentPatrons = []; renderPatronChips(); clearTForm();
+  btn.innerHTML = '💾 Save template'; btn.disabled = false;
+  toast('✓ Template saved'); showMsg('save-msg'); renderTemplateList();
+}
+
+function clearTForm() {
+  ['f-bill','f-title','f-desc','f-subj','f-body'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-priority').value = '1';
+  currentPatrons = []; renderPatronChips();
+  const ft = document.getElementById('tform-title');
+  ft.textContent = 'Create new template'; delete ft.dataset.editId;
+}
+
+function renderTemplateList() {
+  const c = document.getElementById('template-list');
+  const cnt = document.getElementById('tmpl-count');
+  cnt.textContent = templates.length + ' template' + (templates.length !== 1 ? 's' : '');
+  if (!templates.length) { c.innerHTML = '<div class="empty"><p>No templates yet.</p></div>'; return; }
+  c.innerHTML = templates.sort((a,b) => a.priority - b.priority).map(t => {
+    const ph = t.patrons && t.patrons.length
+      ? t.patrons.map(p => `<span class="pchip"><span class="pt ${p.type==='patron'?'pt-p':'pt-c'}">${p.type==='patron'?'Patron':'Cmte'}</span>${p.name}</span>`).join('')
+      : '<span style="font-size:12px;color:#999">None</span>';
+    return `<div class="tmpl-card"><div style="flex:1"><span class="tbill">${t.bill}</span><div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#666;line-height:1.5">${t.desc||'No description.'}</div><div style="margin-top:8px;font-size:12px;font-weight:500;margin-bottom:3px">Patrons:</div><div>${ph}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="tag">${t.topic}</span><span class="${t.status==='active'?'badge-on':'badge-off'}">${t.status==='active'?'Active':'Draft'}</span><span class="tag">Priority ${t.priority}</span></div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm" onclick="editTemplate(${t.id})">✏ Edit</button><button class="btn btn-sm btn-red" onclick="delTemplate(${t.id})">🗑</button></div></div>`;
+  }).join('');
+}
+
+function editTemplate(id) {
+  const t = templates.find(x => x.id === id); if (!t) return;
+  document.getElementById('f-bill').value = t.bill;
+  document.getElementById('f-title').value = t.title;
+  document.getElementById('f-desc').value = t.desc;
+  document.getElementById('f-topic').value = t.topic;
+  document.getElementById('f-subj').value = t.subject;
+  document.getElementById('f-body').value = t.body;
+  document.getElementById('f-status').value = t.status;
+  document.getElementById('f-priority').value = t.priority;
+  currentPatrons = [...(t.patrons||[])]; renderPatronChips();
+  const ft = document.getElementById('tform-title');
+  ft.textContent = 'Edit template — ' + t.bill; ft.dataset.editId = t.id;
+  document.getElementById('atab-templates').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+async function delTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  const t = templates.find(x => x.id === id);
+  if (t && t._dbId) await sb.from('templates').delete().eq('id', t._dbId);
+  templates = templates.filter(x => x.id !== id);
+  toast('✓ Template deleted'); renderTemplateList();
+}
+
+// ── SUBSCRIBERS ──
+let subscribers = [];
+
+async function loadSubscribers() {
+  const { data } = await sb.from('subscribers').select('*').order('created_at');
+  if (data) subscribers = data;
+  renderSubscribers();
+}
+
+function renderSubscribers() {
+  const c = document.getElementById('sub-list');
+  const cnt = document.getElementById('sub-count');
+  cnt.textContent = subscribers.length + ' subscriber' + (subscribers.length !== 1 ? 's' : '');
+  if (!subscribers.length) { c.innerHTML = '<div class="empty"><p>No subscribers yet.</p></div>'; return; }
+  c.innerHTML = subscribers.map(s =>
+    `<div class="sub-row"><div><div style="font-weight:500">${s.name ? s.name + ' &lt;' + s.email + '&gt;' : s.email}</div><div style="font-size:12px;color:#999">Added ${s.added||''}</div></div><button class="btn btn-sm btn-red" onclick="delSub(${s.id})">🗑</button></div>`
+  ).join('');
+}
+
+async function addSub() {
+  const email = document.getElementById('new-email').value.trim();
+  const name = document.getElementById('new-name').value.trim();
+  if (!email || !email.includes('@')) { alert('Enter a valid email.'); return; }
+  const now = new Date();
+  const added = now.toLocaleString('default', { month:'short' }) + ' ' + now.getFullYear();
+  const { data, error } = await sb.from('subscribers').insert({ email, name, added }).select().single();
+  if (error) { toast(error.code === '23505' ? 'Already subscribed.' : 'Error: ' + error.message); return; }
+  subscribers.push(data);
+  document.getElementById('new-email').value = ''; document.getElementById('new-name').value = '';
+  toast('✓ Subscriber added'); renderSubscribers();
+}
+
+async function delSub(id) {
+  await sb.from('subscribers').delete().eq('id', id);
+  subscribers = subscribers.filter(s => s.id !== id);
+  toast('✓ Removed'); renderSubscribers();
+}
+
+async function citizenSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const name = document.getElementById('signup-name').value.trim();
+  const msg = document.getElementById('signup-msg');
+  if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+  const now = new Date();
+  const added = now.toLocaleString('default', { month:'short' }) + ' ' + now.getFullYear();
+  const { error } = await sb.from('subscribers').insert({ email, name: name||'', added });
+  msg.textContent = error
+    ? (error.code === '23505' ? "✓ You're already on our listserv!" : 'Something went wrong. Try again.')
+    : "✓ You've been added to our listserv!";
+  msg.style.color = error && error.code !== '23505' ? '#a32d2d' : '#1b5e20';
+  msg.style.display = 'block';
+  document.getElementById('signup-email').value = ''; document.getElementById('signup-name').value = '';
+  setTimeout(() => msg.style.display = 'none', 3500);
+}
+
+// ── CITIZEN PORTAL ──
+let selectedLeg = null;
+
+function findLegislators() {
+  const loc = document.getElementById('citizen-loc').value; if (!loc) return;
+  const d = LEGISLATORS[loc];
+  document.getElementById('leg-section').style.display = 'block';
+  const all = [...(d.senate||[]), ...(d.house||[])];
+  document.getElementById('leg-results').innerHTML = all.map(l =>
+    `<div class="leg-card"><div class="av">${l.initials}</div><div><div style="font-size:14px;font-weight:500;margin-bottom:2px">${l.name}</div><div style="font-size:12px;color:#666;margin-bottom:6px">${l.role}</div>${l.email ? `<button class="btn btn-sm btn-gold" onclick='selectLeg(${JSON.stringify(JSON.stringify(l))})'>✉ Email this rep</button>` : '<span style="font-size:12px;color:#999">Seat currently vacant</span>'}</div></div>`
+  ).join('');
+  document.getElementById('bills-section').style.display = 'block';
+  renderTopicSelects(); renderBillList();
+}
+
+function selectLeg(j) { selectedLeg = JSON.parse(j); renderBillList(); document.getElementById('email-section').innerHTML = ''; }
+
+function renderBillList(filter, topic) {
+  filter = filter || document.getElementById('bill-search').value || '';
+  topic = topic !== undefined ? topic : (document.getElementById('topic-filter').value || '');
+  const f = templates.filter(t => t.status === 'active')
+    .sort((a,b) => a.priority - b.priority)
+    .filter(t => {
+      const q = filter.toLowerCase();
+      return (!q || t.title.toLowerCase().includes(q) || t.bill.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q))
+        && (!topic || t.topic === topic);
+    });
+  const c = document.getElementById('bill-list');
+  if (!f.length) { c.innerHTML = '<div class="empty"><p>No matching bills.</p></div>'; return; }
+  c.innerHTML = f.map(t => {
+    const ph = t.patrons && t.patrons.length
+      ? `<div style="margin-top:8px">${t.patrons.map(p => `<span class="pchip" style="font-size:11px"><span class="pt ${p.type==='patron'?'pt-p':'pt-c'}">${p.type==='patron'?'Patron':'Committee'}</span>${p.name}</span>`).join('')}</div>`
+      : '';
+    return `<div class="bill-card" onclick="showEmailPreview(${t.id})"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px"><span class="bill-num">${t.bill}</span><span class="tag">${t.topic}</span></div><h3 style="font-size:15px;font-weight:500;margin-bottom:4px">${t.title}</h3><p style="font-size:13px;color:#666;line-height:1.5">${t.desc}</p>${ph}<div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--navy);font-weight:500">✉ Click to email ${selectedLeg ? selectedLeg.name : 'your representative'}</div></div>`;
+  }).join('');
+}
+
+function filterBills(q, topic) {
+  topic = topic !== undefined ? topic : document.getElementById('topic-filter').value;
+  renderBillList(q, topic);
+}
+
+function showEmailPreview(id) {
+  const t = templates.find(x => x.id === id); if (!t) return;
+  const leg = selectedLeg || { name:'[Your Legislator]', email:'', role:'' };
+  const body = t.body.replace(/{LEGISLATOR_NAME}/g, leg.name).replace(/{YOUR_NAME}/g, '[Your Name]');
+  document.getElementById('email-section').innerHTML = `
+    <div class="email-box open">
+      <div class="email-hdr">
+        <p><strong>To:</strong> ${leg.name} (${leg.role})</p>
+        <p><strong>Email:</strong> ${leg.email || 'Select a legislator above first'}</p>
+        <p><strong>Subject:</strong> ${t.subject}</p>
+      </div>
+      <div style="font-size:12px;color:#999;margin-bottom:10px">Preview — [Your Name] will be replaced when you send</div>
+      <div class="email-body">${body}</div>
+      <div style="display:flex;gap:10px;margin-top:1.25rem;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="openMailto(${id})" ${!leg.email?'disabled':''}>✉ Open in my email app</button>
+        <button class="btn" onclick="copyEmail(${id})">Copy text</button>
+        <button class="btn" onclick="document.getElementById('email-section').innerHTML=''">Close</button>
+      </div>
+      <div id="copy-ok-${id}" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Copied!</div>
+    </div>`;
+  document.getElementById('email-section').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function openMailto(id) {
+  const t = templates.find(x => x.id === id), leg = selectedLeg; if (!t || !leg) return;
+  const body = t.body.replace(/{LEGISLATOR_NAME}/g, leg.name).replace(/{YOUR_NAME}/g, '[Your Name]');
+  window.location.href = `mailto:${encodeURIComponent(leg.email)}?subject=${encodeURIComponent(t.subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function copyEmail(id) {
+  const t = templates.find(x => x.id === id), leg = selectedLeg || { name:'[Your Legislator]', email:'' };
+  const tx = `To: ${leg.name}\nEmail: ${leg.email}\nSubject: ${t.subject}\n\n${t.body.replace(/{LEGISLATOR_NAME}/g, leg.name).replace(/{YOUR_NAME}/g, '[Your Name]')}`;
+  navigator.clipboard.writeText(tx).catch(() => {});
+  const ok = document.getElementById('copy-ok-' + id);
+  ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 2000);
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(document.getElementById('share-link').value).catch(() => {});
+  showMsg('copy-ok');
+}
+
+function composeAlert() {
+  const s = document.getElementById('alert-subj').value;
+  const b = document.getElementById('alert-body').value + '\n\n' + document.getElementById('share-link').value;
+  const bcc = subscribers.map(s => s.email).join(',');
+  window.location.href = `mailto:${encodeURIComponent(bcc)}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;
+}
+
+async function loadAdminData() {
+  renderTopicPills(); renderTopicSelects(); renderTemplateList(); renderLegLocality(); renderLegEditor();
+}
+
+// ── INIT ──
+async function init() {
+  await restoreSession();
+  await Promise.all([loadTopics(), loadLegislators(), loadTemplates()]);
+  renderTopicSelects();
+  renderBillList();
+}
+init();
+</script>
+</body>
+</html>
