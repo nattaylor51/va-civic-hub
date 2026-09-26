@@ -807,12 +807,93 @@ async function loadSubscribers(){
   if(data) subscribers=data;
   renderSubscribers();
 }
-function renderSubscribers(){
-  const c=g('sub-list');if(!c)return;
-  const cnt=g('sub-count');
-  if(cnt)cnt.textContent=subscribers.length+' subscriber'+(subscribers.length!==1?'s':'');
-  if(!subscribers.length){c.innerHTML='<div class="empty"><p>No subscribers yet.</p></div>';return;}
-  c.innerHTML=subscribers.map(s=>`<div class="sub-row"><div><div style="font-weight:500">${s.name?s.name+' &lt;'+s.email+'&gt;':s.email}</div><div style="font-size:12px;color:#999">Added ${s.added||''}</div></div><button class="btn btn-sm btn-red" onclick="delSub(${s.id})">🗑</button></div>`).join('');
+function renderSubscribers() {
+  const c = g('sub-list'); if (!c) return;
+  const cnt = g('sub-count');
+  const named = subscribers.filter(s => s.name).length;
+  if (cnt) cnt.textContent =
+    subscribers.length + ' subscriber' + (subscribers.length !== 1 ? 's' : '') +
+    (named ? ` (${named} named)` : '');
+ 
+  if (!subscribers.length) {
+    c.innerHTML = '<div class="empty"><p>No subscribers yet.</p></div>';
+    return;
+  }
+ 
+  // Get current search/filter state
+  const searchVal = (g('sub-search') ? g('sub-search').value : '').toLowerCase();
+  const filterVal = g('sub-filter') ? g('sub-filter').value : 'all';
+  const isOpen = g('sub-list-body') ? g('sub-list-body').style.display !== 'none' : true;
+ 
+  let filtered = subscribers;
+  if (searchVal) {
+    filtered = filtered.filter(s =>
+      s.email.toLowerCase().includes(searchVal) ||
+      (s.name || '').toLowerCase().includes(searchVal)
+    );
+  }
+  if (filterVal === 'named') filtered = filtered.filter(s => s.name);
+  if (filterVal === 'anonymous') filtered = filtered.filter(s => !s.name);
+ 
+  c.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:0.5px solid #eee;background:#fafafa;border-radius:8px 8px 0 0;cursor:pointer" onclick="toggleSubList()">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:500;color:#1a1a1a">
+          ${filtered.length === subscribers.length
+            ? subscribers.length + ' subscriber' + (subscribers.length !== 1 ? 's' : '')
+            : filtered.length + ' of ' + subscribers.length + ' shown'}
+        </span>
+        ${searchVal || filterVal !== 'all'
+          ? `<span style="font-size:11px;background:#e8f0fb;color:#1a4a8a;padding:2px 8px;border-radius:4px">Filtered</span>`
+          : ''}
+      </div>
+      <span id="sub-toggle-arrow" style="font-size:18px;color:#999;transition:transform .2s;transform:${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'}">⌄</span>
+    </div>
+    <div id="sub-list-body" style="display:${isOpen ? 'block' : 'none'}">
+      <div style="padding:.75rem 1rem;border-bottom:0.5px solid #eee;display:flex;gap:8px;flex-wrap:wrap;background:#fff">
+        <input type="text" id="sub-search" placeholder="Search by name or email…"
+          value="${searchVal}"
+          oninput="renderSubscribers()"
+          style="flex:1;min-width:180px;font-size:13px;padding:6px 10px">
+        <select id="sub-filter" onchange="renderSubscribers()" style="font-size:13px;padding:6px 10px;width:140px">
+          <option value="all" ${filterVal === 'all' ? 'selected' : ''}>All subscribers</option>
+          <option value="named" ${filterVal === 'named' ? 'selected' : ''}>Named only</option>
+          <option value="anonymous" ${filterVal === 'anonymous' ? 'selected' : ''}>Email only</option>
+        </select>
+      </div>
+      ${filtered.length === 0
+        ? '<div class="empty"><p>No subscribers match your search.</p></div>'
+        : filtered.map(s => `
+          <div class="sub-row">
+            <div>
+              <div style="font-weight:500">${s.name
+                ? `${s.name} <span style="color:#999;font-weight:400">&lt;${s.email}&gt;</span>`
+                : s.email}</div>
+              <div style="font-size:12px;color:#999">Added ${s.added || ''}</div>
+            </div>
+            <button class="btn btn-sm btn-red" onclick="delSub(${s.id})">🗑</button>
+          </div>`).join('')}
+      ${filtered.length > 0 ? `
+        <div style="padding:.6rem 1rem;font-size:12px;color:#999;border-top:0.5px solid #eee;text-align:right;background:#fafafa;border-radius:0 0 8px 8px">
+          Showing ${filtered.length} of ${subscribers.length}
+          ${searchVal || filterVal !== 'all'
+            ? `• <button onclick="clearSubSearch()" style="background:none;border:none;color:var(--navy);cursor:pointer;font-size:12px;text-decoration:underline">Clear filter</button>`
+            : ''}
+        </div>` : ''}
+    </div>`;
+}
+  function toggleSubList() {
+  const body = g('sub-list-body');
+  const arrow = g('sub-toggle-arrow');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+  function clearSubSearch() {
+  const s = g('sub-search'); if (s) s.value = '';
+  const f = g('sub-filter'); if (f) f.value = 'all';
+  renderSubscribers();
 }
 async function addSub(){
   const email=g('new-email').value.trim();
