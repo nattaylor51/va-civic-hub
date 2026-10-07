@@ -1,18 +1,30 @@
 """
-LegiScan → Supabase legislator sync for SERV at UVA
+LegiScan -> Supabase legislator sync for SERV at UVA
 Pulls Virginia legislators from LegiScan and upserts into Supabase.
-Runs via GitHub Actions weekly (see .github/workflows/sync_legislators.yml)
+Runs via GitHub Actions weekly.
 """
 
-import os, json, urllib.request, urllib.parse
+import os, json, urllib.request, urllib.parse, sys
 
-LEGISCAN_KEY = os.environ['LEGISCAN_KEY']
-SUPABASE_URL = os.environ['SUPABASE_URL']
-SUPABASE_SERVICE_KEY = os.environ['SUPABASE_SERVICE_KEY']
+LEGISCAN_KEY = os.environ.get('LEGISCAN_KEY', '').strip()
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
+SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', '').strip()
+
+# Validate secrets are present
+if not LEGISCAN_KEY:
+    print("ERROR: LEGISCAN_KEY secret is missing or empty")
+    sys.exit(1)
+if not SUPABASE_URL:
+    print("ERROR: SUPABASE_URL secret is missing or empty")
+    sys.exit(1)
+if not SUPABASE_SERVICE_KEY:
+    print("ERROR: SUPABASE_SERVICE_KEY secret is missing or empty")
+    sys.exit(1)
+
+print(f"LegiScan key present: {LEGISCAN_KEY[:6]}...")
+print(f"Supabase URL: {SUPABASE_URL}")
 
 # ── LOCALITY MAP ──
-# Maps LegiScan district numbers to Virginia localities.
-# Senate districts are stable; House districts updated for 2023 redistricting.
 SENATE_DISTRICT_TO_LOCALITIES = {
     1:  ['Clarke County','Frederick County','Shenandoah County','Warren County','Winchester'],
     2:  ['Augusta County','Bath County','Highland County','Page County','Harrisonburg','Rockingham County'],
@@ -160,83 +172,144 @@ HOUSE_DISTRICT_TO_LOCALITIES = {
 }
 
 def legiscan_get(op, **params):
-    base = f'https://api.legiscan.com/?key={LEGISCAN_KEY}&op={op}'
-    for k, v in params.items():
-        base += f'&{k}={urllib.parse.quote(str(v))}'
-    with urllib.request.urlopen(base, timeout=30) as r:
-        return json.loads(r.read())
+    """Call LegiScan API and return parsed JSON."""
+    args = {'key': LEGISCAN_KEY, 'op': op}
+    args.update(params)
+    url = 'https://api.legiscan.com/?' + urllib.parse.urlencode(args)
+    print(f"  Calling: {op} {params}")
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'SERV-UVA-Sync/1.0'})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+            if data.get('status') == 'ERROR':
+                print(f"  LegiScan error: {data.get('alert', {}).get('message', 'Unknown error')}")
+                sys.exit(1)
+            return data
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='replace')
+        print(f"  HTTP {e.code} error: {body[:300]}")
+        raise
 
 def initials(name):
-    parts = name.split()
+    parts = [p for p in name.split() if p not in ('Jr.','Jr','Sr.','Sr','III','II','IV')]
     if len(parts) >= 2:
         return (parts[-2][0] + parts[-1][0]).upper()
     return name[:2].upper()
 
-def build_email(name, chamber):
-    """Build email from name using verified formats."""
-    last = name.split()[-1].lower()
-    # Remove suffixes
-    for suffix in ['jr.', 'jr', 'sr.', 'sr', 'iii', 'ii', 'iv']:
-        if last == suffix:
-            last = name.split()[-2].lower()
+def clean_last(name):
+    """Extract cleaned last name for email building."""
+    parts = name.split()
+    last = parts[-1].lower()
+    for suffix in ['jr.','jr','sr.','sr','iii','ii','iv']:
+        if last == suffix and len(parts) > 1:
+            last = parts[-2].lower()
             break
-    # Remove punctuation
-    last = last.replace('.', '').replace("'", '').replace('-', '')
+    return last.replace('.','').replace("'",'').replace('-','').replace(',','')
+
+def build_email(name, chamber):
+    last = clean_last(name)
     if chamber == 'senate':
         return f'senator{last}@senate.virginia.gov'
     else:
-        # House format: Del[FirstInitial][LastName]
         first_initial = name.split()[0][0].upper()
-        last_cap = last.capitalize()
-        return f'Del{first_initial}{last_cap}@house.virginia.gov'
+        return f'Del{first_initial}{last.capitalize()}@house.virginia.gov'
+
+def supabase_request(method, path, data=None):
+    """Make an authenticated Supabase request."""
+    url = f'{SUPABASE_URL}/rest/v1/{path}'
+    body = json.dumps(data).encode('utf-8') if data is not None else None
+    headers = {
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Authorization': f'Bearer {SUPABASE_SERVICE_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    }
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='replace')
+        print(f"  Supabase {method} {path} failed: HTTP {e.code}: {body[:300]}")
+        raise
 
 def main():
-    print("Fetching Virginia session list...")
+    # ── Step 1: Get current VA session ──
+    print("\n1. Fetching Virginia session list...")
     sessions_data = legiscan_get('getSessionList', state='VA')
     sessions = sessions_data.get('sessions', [])
+    if not sessions:
+        print("ERROR: No sessions returned from LegiScan")
+        sys.exit(1)
 
-    # Find most recent session
-    current = sorted(sessions, key=lambda s: s.get('year_end', 0), reverse=True)[0]
+    # Pick most recent session by year_end
+    current = sorted(sessions, key=lambda s: (s.get('year_end', 0), s.get('session_id', 0)), reverse=True)[0]
     session_id = current['session_id']
-    print(f"Using session: {current['session_name']} (ID: {session_id})")
+    print(f"   Using: {current['session_name']} (ID: {session_id})")
 
-    print("Fetching legislators...")
+    # ── Step 2: Get legislators ──
+    print("\n2. Fetching legislators...")
     people_data = legiscan_get('getSessionPeople', id=session_id)
-    people = people_data.get('sessionpeople', {}).get('people', [])
-    print(f"Found {len(people)} legislators")
 
-    # Build locality map
+    # Handle both possible response structures
+    session_people = people_data.get('sessionpeople', {})
+    people = session_people.get('people', [])
+
+    if not people:
+        print("ERROR: No people returned. Response keys:", list(people_data.keys()))
+        sys.exit(1)
+
+    print(f"   Found {len(people)} legislators")
+
+    # ── Step 3: Build locality map ──
+    print("\n3. Building locality map...")
     legislators = {}
+    unmapped = []
 
     for person in people:
         name = person.get('name', '').strip()
-        role = person.get('role', '').strip()   # e.g. "Sen" or "Rep"
-        district_str = person.get('district', '').strip()  # e.g. "SD-001" or "HD-001"
+        role = person.get('role', '').strip()
+        district_str = str(person.get('district', '')).strip()
 
         if not name or not district_str:
             continue
 
-        # Parse district number
-        try:
-            dist_num = int(district_str.split('-')[-1])
-        except ValueError:
+        # Parse district number from formats like "SD-001", "HD-001", "001", "1"
+        dist_num = None
+        for part in district_str.replace('-', ' ').split():
+            try:
+                dist_num = int(part)
+                break
+            except ValueError:
+                continue
+        if dist_num is None:
             continue
 
-        # Determine chamber
-        if role in ('Sen', 'Senator') or district_str.startswith('SD'):
+        # Determine chamber from role or district prefix
+        role_upper = role.upper()
+        dist_upper = district_str.upper()
+        if 'SEN' in role_upper or dist_upper.startswith('SD') or dist_upper.startswith('S'):
             chamber = 'senate'
             role_label = f'SD {dist_num}'
             locality_map = SENATE_DISTRICT_TO_LOCALITIES
-        elif role in ('Rep', 'Delegate', 'Del') or district_str.startswith('HD'):
+        elif 'REP' in role_upper or 'DEL' in role_upper or dist_upper.startswith('HD') or dist_upper.startswith('H'):
             chamber = 'house'
             role_label = f'HD {dist_num}'
             locality_map = HOUSE_DISTRICT_TO_LOCALITIES
         else:
-            continue
+            # Guess by district number range
+            if dist_num <= 40:
+                chamber = 'senate'
+                role_label = f'SD {dist_num}'
+                locality_map = SENATE_DISTRICT_TO_LOCALITIES
+            else:
+                chamber = 'house'
+                role_label = f'HD {dist_num}'
+                locality_map = HOUSE_DISTRICT_TO_LOCALITIES
 
         localities = locality_map.get(dist_num, [])
         if not localities:
-            print(f"  WARNING: No localities mapped for {role_label} ({name})")
+            unmapped.append(f"{role_label} ({name})")
             continue
 
         email = build_email(name, chamber)
@@ -250,62 +323,27 @@ def main():
         for loc in localities:
             if loc not in legislators:
                 legislators[loc] = {'senate': [], 'house': []}
-            # Avoid duplicates
             existing_roles = [l['role'] for l in legislators[loc][chamber]]
             if role_label not in existing_roles:
                 legislators[loc][chamber].append(leg_entry)
 
-    print(f"Mapped legislators to {len(legislators)} localities")
+    print(f"   Mapped to {len(legislators)} localities")
+    if unmapped:
+        print(f"   Unmapped districts ({len(unmapped)}): {', '.join(unmapped[:10])}")
 
-    # Push to Supabase
-    print("Syncing to Supabase...")
-
-    # Check if row exists
-    req = urllib.request.Request(
-        f'{SUPABASE_URL}/rest/v1/legislators?select=id&limit=1',
-        headers={
-            'apikey': SUPABASE_SERVICE_KEY,
-            'Authorization': f'Bearer {SUPABASE_SERVICE_KEY}',
-        }
-    )
-    with urllib.request.urlopen(req) as r:
-        existing = json.loads(r.read())
-
-    payload = json.dumps([{'data': legislators}]).encode('utf-8')
+    # ── Step 4: Sync to Supabase ──
+    print("\n4. Syncing to Supabase...")
+    existing = supabase_request('GET', 'legislators?select=id&limit=1')
 
     if existing:
-        # Update existing row
         row_id = existing[0]['id']
-        update_req = urllib.request.Request(
-            f'{SUPABASE_URL}/rest/v1/legislators?id=eq.{row_id}',
-            data=payload,
-            headers={
-                'apikey': SUPABASE_SERVICE_KEY,
-                'Authorization': f'Bearer {SUPABASE_SERVICE_KEY}',
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            },
-            method='PATCH'
-        )
-        with urllib.request.urlopen(update_req) as r:
-            print(f"Updated existing legislator row (ID: {row_id})")
+        supabase_request('PATCH', f'legislators?id=eq.{row_id}', [{'data': legislators}])
+        print(f"   Updated existing row (ID: {row_id})")
     else:
-        # Insert new row
-        insert_req = urllib.request.Request(
-            f'{SUPABASE_URL}/rest/v1/legislators',
-            data=payload,
-            headers={
-                'apikey': SUPABASE_SERVICE_KEY,
-                'Authorization': f'Bearer {SUPABASE_SERVICE_KEY}',
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            },
-            method='POST'
-        )
-        with urllib.request.urlopen(insert_req) as r:
-            print("Inserted new legislator row")
+        supabase_request('POST', 'legislators', [{'data': legislators}])
+        print("   Inserted new row")
 
-    print(f"\nSync complete! {len(legislators)} localities updated.")
+    print(f"\n✓ Sync complete! {len(legislators)} localities, {len(people)} legislators.")
 
 if __name__ == '__main__':
     main()
