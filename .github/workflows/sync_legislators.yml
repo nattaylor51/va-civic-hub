@@ -1,9 +1,9 @@
-name: Sync Virginia Legislators from LegiScan
+name: Sync Virginia Legislators from Open States
 
 on:
   schedule:
     - cron: '0 8 * * 1'  # Every Monday at 8am UTC
-  workflow_dispatch:      # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:       # Allows manual trigger from Actions tab
 
 jobs:
   sync:
@@ -19,7 +19,7 @@ jobs:
 
       - name: Run legislator sync
         env:
-          LEGISCAN_KEY: ${{ secrets.LEGISCAN_KEY }}
+          OPENSTATES_KEY: ${{ secrets.OPENSTATES_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python sync_legislators.py
