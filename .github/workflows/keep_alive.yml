@@ -1,0 +1,27 @@
+name: Keep Supabase Alive
+ 
+on:
+  schedule:
+    - cron: '0 10 * * *'  # Every day at 10am UTC
+  workflow_dispatch:       # Manual trigger if needed
+ 
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.LEGISCAN_KEY }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/topics?select=id&limit=1")
+          echo "Supabase ping status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
+            echo "✓ Supabase is alive"
+          else
+            echo "⚠ Unexpected status code: $STATUS"
+          fi
+ 
