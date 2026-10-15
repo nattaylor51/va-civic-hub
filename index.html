@@ -725,10 +725,11 @@ async function saveTemplate(){
     const {data:r}=await sb.from('templates').insert({data:payload}).select().single();
     if(r) newT._dbId=r.id;
   }
-  templates.push(newT);
   currentPatrons=[];renderPatronChips();clearTForm();
-  btn.innerHTML='💾 Save template';btn.disabled=false;
-  toast('✓ Template saved');showMsg('save-msg');renderTemplateList();
+btn.innerHTML='💾 Save template';btn.disabled=false;
+toast('✓ Template saved');showMsg('save-msg');
+await loadTemplates();
+renderTemplateList();
 }
 function clearTForm(){
   ['f-bill','f-title','f-desc','f-subj','f-body'].forEach(id=>{const el=g(id);if(el)el.value='';});
