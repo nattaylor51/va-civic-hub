@@ -236,6 +236,7 @@ def fetch_all_people():
         print(f"  Fetching page {page}...")
         resp = openstates_get('people', {
             'jurisdiction': 'ocd-jurisdiction/country:us/state:va/government',
+                'include': 'current_role',
             'org_classification': 'legislature',
             'per_page': per_page,
             'page': page,
@@ -269,6 +270,11 @@ def main():
         print('ERROR: No legislators returned')
         sys.exit(1)
     print(f'   Total: {len(people)} legislators')
+    if people:
+        # Print first person structure so we can verify field names
+        sample = people[0]
+        print(f'   Sample fields: {list(sample.keys())}')
+        print(f'   Sample current_role: {sample.get("current_role")}')
 
     # ── 2. Build locality map ──
     print('\n2. Building locality map...')
@@ -280,25 +286,24 @@ def main():
         if not name:
             continue
 
-        # Get current role
+        # Get current role - Open States returns current_role as a dict
         roles = person.get('current_role') or {}
-        if not roles:
-            # Try current_memberships
-            memberships = person.get('current_memberships', [])
-            for m in memberships:
-                org = m.get('organization', {})
-                if org.get('classification') in ('upper','lower'):
-                    roles = {
-                        'org_classification': org['classification'],
-                        'district': m.get('post',{}).get('label','')
-                    }
-                    break
-
-        if not roles:
-            continue
+        if isinstance(roles, list):
+            roles = roles[0] if roles else {}
 
         chamber_class = roles.get('org_classification','')
-        district_raw  = str(roles.get('district',''))
+        district_raw  = str(roles.get('district', roles.get('district_name', '')))
+
+        # Fallback: check roles list
+        if not chamber_class:
+            for r in person.get('roles', []):
+                if r.get('type') in ('upper','lower','senate','house'):
+                    chamber_class = 'upper' if r.get('type') in ('upper','senate') else 'lower'
+                    district_raw = str(r.get('district',''))
+                    break
+
+        if not chamber_class:
+            continue
 
         if chamber_class == 'upper':
             chamber = 'senate'
