@@ -231,7 +231,7 @@ def fetch_all_people():
     """Fetch all current VA legislators, paginating through results."""
     people = []
     page = 1
-    per_page = 100
+    per_page = 50
     while True:
         print(f"  Fetching page {page}...")
         resp = openstates_get('people', {
