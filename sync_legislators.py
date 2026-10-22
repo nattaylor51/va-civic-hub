@@ -179,7 +179,7 @@ def openstates_get(path, params=None):
         }
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=60) as r:
             return json.loads(r.read())
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', errors='replace')
