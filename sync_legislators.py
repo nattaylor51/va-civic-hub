@@ -217,8 +217,7 @@ def main():
     while True:
         print(f'   Page {page}...')
         resp = openstates_get('people', {
-            'jurisdiction': 'ocd-jurisdiction/country:us/state:va/government',
-            'org_classification': 'legislature',
+            'jurisdiction': 'va',
             'per_page': 50,
             'page': page
         })
