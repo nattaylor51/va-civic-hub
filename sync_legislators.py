@@ -234,14 +234,25 @@ def fetch_all_people():
     per_page = 50
     while True:
         print(f"  Fetching page {page}...")
-        resp = openstates_get('people', {
+        # Retry up to 3 times on timeout
+        resp = None
+        for attempt in range(3):
+            try:
+                resp = openstates_get('people', {
             'jurisdiction': 'ocd-jurisdiction/country:us/state:va/government',
                 'include': 'current_role',
             'org_classification': 'legislature',
             'per_page': per_page,
             'page': page,
             'include': 'other_names'
-        })
+                        })
+                break
+            except Exception as e:
+                print(f"  Attempt {attempt+1} failed: {e}, retrying...")
+                import time; time.sleep(5)
+        if resp is None:
+            print("  All retries failed, skipping page")
+            break
         results = resp.get('results', [])
         people.extend(results)
         print(f"  Got {len(results)} legislators (total so far: {len(people)})")
