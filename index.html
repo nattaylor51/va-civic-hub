@@ -3,224 +3,301 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virginia Civic Action Hub — SERV at UVA</title>
+<title>SERVPat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f4;color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column}
-:root{--navy:#1a2e4a;--gold:#c8a84b;--red:#8b1a1a}
-.nav{background:var(--navy);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:3px solid var(--gold);flex-shrink:0}
-.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:15px;font-weight:500}
-.seal{width:32px;height:32px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--navy);font-weight:700;flex-shrink:0}
-.nav-tabs{display:flex;gap:4px}
-.nav-tab{padding:8px 14px;border:none;background:transparent;color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;font-weight:500;border-radius:6px;transition:all .15s;font-family:inherit}
-.nav-tab:hover{background:rgba(255,255,255,.1);color:#fff}
-.nav-tab.active{background:var(--gold);color:var(--navy)}
+:root{
+  --navy:#1a2e4a;--gold:#c8a84b;--red:#8b1a1a;
+  --ink:#222b36;--muted:#667080;--paper:#f8f5ee;--sheet:#fffdf8;--line:#e3dccd;--gold-deep:#8c6d1c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);font-size:15px;line-height:1.6;color:var(--ink);background:var(--paper);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--navy)}
+h2,h3,h4{font-family:var(--serif);font-weight:600;color:var(--navy);line-height:1.25}
+code{font-size:.9em;background:#f1ece0;padding:1px 5px;border-radius:3px}
+
+/* ---------- top bar ---------- */
+.nav{background:var(--sheet);border-bottom:1px solid var(--line);padding:.8rem max(2rem,calc(50% - 480px));display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:25px;font-weight:700;letter-spacing:.01em;line-height:1;color:var(--navy)}
+.brand .b1{color:#b3322a}.brand .b2{color:#2e4a8a}.brand .b3{color:#2f7a3a}.brand .b4{color:#a8861f}
+.brand .pat{font-weight:500;color:var(--navy);margin-left:1px}
+.nav-tabs{display:flex;gap:1.6rem}
+.nav-tab{background:none;border:none;border-bottom:2px solid transparent;padding:.35rem 0;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.nav-tab:hover{color:var(--navy)}
+.nav-tab.active{color:var(--navy);border-bottom-color:var(--gold);font-weight:600}
 .main{flex:1}
-.panel{display:none;padding:1.5rem;max-width:960px;margin:0 auto;width:100%}
+.panel{display:none;padding:2.75rem 1.5rem 3.5rem;max-width:960px;margin:0 auto;width:100%}
 .panel.active{display:block}
+#panel-citizen{max-width:760px}
+
+/* ---------- headings and copy ---------- */
 .sh{margin-bottom:1.5rem}
-.sh h2{font-size:20px;font-weight:500;margin-bottom:4px}
-.sh p{font-size:13px;color:#666}
-.card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem}
-.card-title{font-size:14px;font-weight:500;margin-bottom:1rem}
-.fg{display:grid;gap:12px}
+.sh h2{font-size:36px;letter-spacing:-.015em;margin-bottom:.5rem}
+.sh p{color:var(--muted);font-size:15px}
+.sh p.lede{font-size:18px;max-width:37em;line-height:1.55}
+#admin-content .sh h2,#ls-content .sh h2{font-size:26px}
+.step-sec{margin-top:2.6rem}
+.step-h{font-size:22px;margin-bottom:.3rem}
+.step-n{color:var(--gold-deep);margin-right:.5rem;font-weight:500}
+.step-p{color:var(--muted);margin-bottom:1rem;max-width:36em}
+.sub-h{font-size:17px;margin:1.8rem 0 .4rem}
+
+/* ---------- forms ---------- */
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:.3rem}
+input,select,textarea{width:100%;padding:.55rem .7rem;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1px solid #cdc4b0;border-radius:4px}
+select option{background:#fff;color:var(--ink)}
+textarea{resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(200,168,75,.55);outline-offset:1px;border-color:var(--gold)}
+.fg{display:grid;gap:.9rem}
 .fg2{grid-template-columns:1fr 1fr}
 .fg3{grid-template-columns:1fr 1fr 1fr}
-label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
-input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:6px;font-family:inherit;font-size:14px;background:#fff;color:#1a1a1a;transition:border-color .15s}
-select option{background:#fff;color:#1a1a1a}
-textarea{resize:vertical;line-height:1.6}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,168,75,.15)}
-.fg-gold{background:#fdf9f0;border:1.5px solid var(--gold);border-left:4px solid var(--gold);border-radius:6px;padding:1rem;margin-bottom:12px}
-.fg-gold input,.fg-gold select,.fg-gold textarea{border-color:var(--gold)}
-.fg-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:8px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;transition:all .15s;font-family:inherit}
-.btn:hover{background:#f5f5f5}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-navy{background:var(--navy);color:#fff;border-color:var(--navy)}
-.btn-navy:hover{background:#243d5e}
-.btn-gold{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:600}
-.btn-gold:hover{background:#b8973f}
-.btn-red{background:#fff;color:#a32d2d;border-color:#a32d2d}
-.btn-red:hover{background:#fcebeb}
-.btn-sm{padding:5px 10px;font-size:12px}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
-.tag{font-size:11px;padding:2px 8px;border-radius:4px;background:#f0f0f0;color:#555;border:0.5px solid #ddd}
-.badge-on{background:#e8f5e9;color:#1b5e20;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
-.badge-off{background:#fff8e1;color:#e65100;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
-.hero{background:var(--navy);border-radius:10px;padding:2rem;margin-bottom:1.5rem}
-.hero h2{font-size:20px;font-weight:500;margin-bottom:6px;color:#fff}
-.hero p{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:1.25rem}
-.loc-wrap{position:relative;max-width:360px}
-.loc-wrap select{background:#fff;color:var(--navy);border:none;font-weight:500;padding:10px 12px;font-size:14px;border-radius:6px;appearance:none;cursor:pointer}
-.loc-wrap::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%) rotate(90deg);color:var(--navy);pointer-events:none;font-size:18px}
-.leg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:1.5rem}
-.leg-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1rem;display:flex;align-items:flex-start;gap:12px}
-.av{width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
-.bill-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1.25rem;margin-bottom:.75rem;cursor:pointer;transition:all .15s}
-.bill-card:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(200,168,75,.15)}
-.bill-num{font-size:11px;font-weight:700;letter-spacing:.06em;background:var(--red);color:#fff;padding:2px 8px;border-radius:4px}
-.email-box{background:#fff;border:2px solid var(--gold);border-radius:10px;padding:1.5rem;margin:1rem 0;display:none}
-.email-box.open{display:block}
-.email-hdr{border-bottom:0.5px solid #eee;padding-bottom:12px;margin-bottom:12px}
-.email-hdr p{font-size:13px;margin-bottom:4px}
-.email-body{font-size:14px;line-height:1.8;white-space:pre-wrap}
-.share-row{background:#f5f5f5;border:0.5px solid #ddd;border-radius:6px;padding:1rem;display:flex;gap:10px;align-items:center}
-.frow{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.frow input,.frow select{flex:1;min-width:140px}
-.steps{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
-.step{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
-.snum{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
-.sarrow{color:var(--gold);font-weight:600}
-.notice{background:#e8f4fd;border:0.5px solid #b8d4ed;border-radius:6px;padding:.75rem 1rem;font-size:13px;color:#1a5276;margin-bottom:1rem}
-.sub-list{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:.25rem 1.25rem}
-.sub-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:0.5px solid #eee;font-size:13px}
-.sub-row:last-child{border-bottom:none}
-.empty{text-align:center;padding:2.5rem 1rem;color:#999}
-.lock-wall{display:flex;align-items:flex-start;justify-content:center;padding:4rem 1rem;min-height:400px}
-.lock-box{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:2rem;width:100%;max-width:380px;text-align:center}
-.lock-box h3{font-size:18px;font-weight:500;margin-bottom:6px}
-.lock-box p{font-size:13px;color:#666;margin-bottom:1.5rem}
-.lock-err{font-size:12px;color:#a32d2d;margin-top:8px;display:none}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:0.5px solid #ccc;border-radius:6px;font-size:13px;background:#f5f5f5;margin:3px}
-.pill button{background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:0 0 0 2px}
-.pill button:hover{color:#a32d2d}
-.pchip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:#f5f5f5;border:0.5px solid #ccc;border-radius:6px;font-size:12px;margin:2px}
-.pchip button{background:none;border:none;cursor:pointer;color:#999;font-size:14px;line-height:1;padding:0}
-.pt{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:3px;margin-right:2px}
-.pt-p{background:#e8f0fb;color:#1a4a8a}
-.pt-c{background:#fef3e2;color:#7a4800}
-.signup-banner{background:linear-gradient(135deg,var(--navy) 0%,#2a4a6a 100%);border-radius:10px;padding:1.75rem 2rem;margin-top:2rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
-.signup-banner h3{color:#fff;font-size:16px;font-weight:500;margin-bottom:4px}
-.signup-banner p{color:rgba(255,255,255,.7);font-size:13px}
-.sf{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:280px;max-width:460px}
-.sf input{flex:1;min-width:140px;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:13px}
-.sf input::placeholder{color:rgba(255,255,255,.5)}
-.atabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid #ddd;padding-bottom:.75rem;flex-wrap:wrap}
-.atab{padding:6px 14px;border:0.5px solid #ddd;background:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;color:#666;transition:all .15s}
-.atab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.frow{display:flex;gap:.6rem;margin:.9rem 0 .4rem;flex-wrap:wrap}
+.frow input,.frow select{flex:1;min-width:150px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem 1.05rem;border-radius:4px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #cdc4b0;background:#fff;color:var(--navy);line-height:1.2}
+.btn:hover{background:#f3eee2}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-navy,.btn-gold{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn-navy:hover,.btn-gold:hover{background:#12223a}
+.btn-red{background:#fff;color:#9b2c2c;border-color:#dcbcbc}
+.btn-red:hover{background:#fbefef}
+.btn-sm{padding:.32rem .75rem;font-size:13px}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.1rem}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- step 1: address ---------- */
+.addr-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.addr-row input{flex:1;min-width:240px;padding:.8rem .95rem;font-size:16px}
+.addr-row .btn{padding:.8rem 1.3rem;font-size:15px}
+.addr-note{font-size:13px;color:var(--muted);margin-top:.6rem}
+.addr-msg{display:none;margin-top:.8rem;padding:.7rem .9rem;background:#fbf1e4;border:1px solid #ecd3ac;border-radius:4px;color:#6b4a14;font-size:14px;line-height:1.5}
+.addr-msg a{color:#6b4a14;font-weight:600}
+.or-row{margin-top:1.2rem;font-size:14px;color:var(--muted);display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.or-row label{margin:0;font-weight:500}
+.or-row select{width:auto;min-width:230px}
+
+/* ---------- legislators ---------- */
+.leg-note{font-size:14px;color:var(--muted);margin:1.6rem 0 .6rem;max-width:40em}
+.leg-grid{border-top:1px solid var(--line)}
+.leg-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem .5rem;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.leg-card.on{background:#f6efd9}
+.leg-name{font-family:var(--serif);font-size:19px;color:var(--navy);line-height:1.25}
+.leg-role{font-size:13px;color:var(--muted)}
+
+/* ---------- bills ---------- */
+.writing-to{font-size:14px;color:var(--muted);margin-bottom:.2rem}
+#bill-list{margin-top:.6rem}
+.bill-card{background:transparent;border-top:1px solid var(--line);padding:1.15rem .5rem;cursor:pointer}
+.bill-card:last-child{border-bottom:1px solid var(--line)}
+.bill-card:hover{background:#f6f0e2}
+.bill-top{display:flex;gap:.8rem;align-items:baseline;font-size:13px;color:var(--muted)}
+.bill-num{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold-deep);letter-spacing:.02em}
+.bill-title{font-size:20px;margin:.15rem 0 .25rem}
+.bill-desc{color:var(--muted)}
+.bill-patrons{font-size:13px;color:var(--muted);margin-top:.35rem}
+.bill-cta{display:inline-block;margin-top:.5rem;font-size:14px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--gold)}
+.tag{font-size:12px;padding:2px 8px;border-radius:3px;background:#f1ece0;color:var(--muted)}
+
+/* ---------- the email draft ---------- */
+.email-box{background:#fff;border:1px solid #d8cfba;border-radius:4px;padding:1.6rem 1.8rem;margin:1.8rem 0;box-shadow:0 12px 30px rgba(26,46,74,.08)}
+.email-box .step-h{margin-bottom:1rem}
+.email-hdr{border-bottom:1px solid var(--line);padding-bottom:.8rem;margin-bottom:1.1rem;font-size:14px}
+.email-hdr p{display:flex;gap:.8rem;margin-bottom:.2rem}
+.email-hdr strong{width:60px;flex-shrink:0;color:var(--muted);font-weight:500}
+.email-body{white-space:pre-wrap;font-size:15px;line-height:1.75}
+.email-note{font-size:13px;color:var(--muted);margin-top:1.1rem}
+.copied{display:none;font-size:13px;color:#2f6b3a;margin-top:.5rem}
+
+/* ---------- sign-up ---------- */
+.signup{margin-top:3.5rem;padding-top:1.7rem;border-top:1px solid var(--line)}
+.signup h3{font-size:21px}
+.signup p{color:var(--muted);margin:.3rem 0 1rem;max-width:36em}
+.sf{display:flex;gap:.6rem;flex-wrap:wrap}
+.sf input{flex:1;min-width:170px}
+.signup-msg{display:none;font-size:14px;margin-top:.7rem}
+
+/* ---------- admin ---------- */
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:1.4rem 1.5rem;margin-bottom:1.25rem}
+.card-title{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--navy);margin-bottom:.9rem}
+.notice{background:#f6f1e3;border:1px solid var(--line);border-radius:4px;padding:.7rem .9rem;font-size:14px;color:var(--ink);margin-bottom:1rem}
+.empty{color:var(--muted);padding:1.2rem 0}
+.empty p{margin:0}
+.atabs{display:flex;gap:1.5rem;border-bottom:1px solid var(--line);margin-bottom:1.5rem;flex-wrap:wrap}
+.atab{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:.55rem 0;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.atab:hover{color:var(--navy)}
+.atab.active{color:var(--navy);border-bottom-color:var(--gold);font-weight:600}
 .asec{display:none}.asec.active{display:block}
-.leg-wrap{max-height:440px;overflow-y:auto;border:0.5px solid #ddd;border-radius:6px}
-.leg-row{display:flex;align-items:center;padding:.5rem .75rem;border-bottom:0.5px solid #eee;font-size:13px;gap:8px}
-.leg-row:last-child{border-bottom:none}
-.leg-row:hover{background:#f9f9f9}
-.ln{font-weight:500;flex:1;min-width:120px}
-.lr{color:#666;font-size:12px;width:60px;flex-shrink:0}
-.lc{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;width:50px;text-align:center}
-.lc-s{background:#e8f0fb;color:#1a4a8a}
-.lc-h{background:#e8f5e9;color:#1b5e20}
-.loc-hdr{font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .75rem;background:#f0f0f0;border-bottom:0.5px solid #ddd;border-top:0.5px solid #ddd}
-.tmpl-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.tbill{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);background:var(--navy);padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem}
-.stat-card{background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:1.25rem;text-align:center}
-.stat-num{font-size:36px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:4px}
-.stat-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em}
-.usage-row{display:flex;align-items:center;padding:.65rem 0;border-bottom:0.5px solid #eee;gap:8px}
+.fg-gold{background:#fffdf6;border:1px solid var(--gold);border-radius:4px;padding:1rem 1.1rem;margin-bottom:1rem}
+.fg-gold input,.fg-gold select,.fg-gold textarea{border-color:var(--gold)}
+.fg-label{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--navy);margin-bottom:.7rem}
+.badge-on{background:#e7f1e6;color:#2f6b3a;font-size:12px;padding:2px 8px;border-radius:3px;font-weight:600}
+.badge-off{background:#f6ead0;color:#8a5a12;font-size:12px;padding:2px 8px;border-radius:3px;font-weight:600}
+.tmpl-card{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:1rem 1.2rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+.tbill{font-family:var(--serif);font-weight:700;color:var(--gold-deep);margin-right:.5rem}
+.pill{display:inline-flex;align-items:center;gap:.4rem;padding:3px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:#fff;margin:3px}
+.pill button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;padding:0}
+.pill button:hover{color:#9b2c2c}
+.pchip{display:inline-flex;align-items:center;gap:.35rem;padding:2px 9px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12px;margin:2px}
+.pchip button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1;padding:0}
+.pt{font-size:11px;font-weight:600;padding:0 5px;border-radius:3px;margin-right:2px}
+.pt-p{background:#e8eef8;color:#1d4a8a}.pt-c{background:#f7ecd9;color:#7a4800}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem}
+.stat-num{font-family:var(--serif);font-size:34px;color:var(--navy);line-height:1}
+.stat-label{font-size:13px;color:var(--muted);margin-top:.4rem}
+.usage-row{display:flex;align-items:center;padding:.65rem 0;border-bottom:1px solid var(--line);gap:.7rem}
 .usage-row:last-child{border-bottom:none}
-.usage-bill{font-weight:600;color:var(--navy);font-size:11px;background:#eef2f8;padding:2px 7px;border-radius:4px;flex-shrink:0;width:70px;text-align:center}
-.usage-title{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.usage-bar-wrap{width:120px;background:#f0f0f0;border-radius:4px;height:8px;flex-shrink:0}
-.usage-bar{background:var(--gold);height:8px;border-radius:4px;transition:width .4s}
-.usage-count{font-size:12px;color:#666;width:55px;text-align:right;flex-shrink:0}
-footer{background:var(--navy);border-top:3px solid var(--gold);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:auto}
-.fl{display:flex;align-items:center;gap:14px}
-.flogo{display:flex;align-items:center}
-.fll{font-family:Georgia,serif;font-size:32px;font-weight:700;line-height:1}
-.ftag{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px}
-.fdiv{width:1px;height:36px;background:rgba(255,255,255,.2);margin:0 6px}
-.fr{display:flex;align-items:center;gap:10px}
-.flinks{text-align:right;color:rgba(255,255,255,.45);font-size:11px;line-height:1.7}
-.flinks a{color:var(--gold);text-decoration:none}
-.secret{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.1);font-size:14px;padding:6px 8px;border-radius:4px;transition:color .25s;font-family:inherit}
-.secret:hover{color:rgba(255,255,255,.4)}
-.emodal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(0,0,0,.6);backdrop-filter:blur(2px)}
+.usage-bill{font-family:var(--serif);font-weight:700;color:var(--gold-deep);width:70px;flex-shrink:0}
+.usage-title{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.usage-bar-wrap{width:120px;background:#eee7d8;border-radius:4px;height:8px;flex-shrink:0}
+.usage-bar{background:var(--gold);height:8px;border-radius:4px}
+.usage-count{font-size:13px;color:var(--muted);width:70px;text-align:right;flex-shrink:0}
+.leg-wrap{max-height:440px;overflow-y:auto;border:1px solid var(--line);border-radius:4px;background:#fff}
+.leg-row{display:flex;align-items:center;padding:.5rem .8rem;border-bottom:1px solid var(--line);gap:.6rem;font-size:14px}
+.leg-row:last-child{border-bottom:none}
+.leg-row:hover{background:#faf6ec}
+.ln{font-weight:600;flex:1;min-width:120px}
+.lr{color:var(--muted);font-size:13px;width:64px;flex-shrink:0}
+.lc{font-size:11px;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0;width:42px;text-align:center}
+.lc-s{background:#e8eef8;color:#1d4a8a}.lc-h{background:#e7f1e6;color:#2f6b3a}
+.loc-hdr{font-size:12px;font-weight:700;color:var(--navy);padding:.4rem .8rem;background:#f3eee2;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+.sub-list{background:#fff;border:1px solid var(--line);border-radius:6px;padding:0}
+.sub-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;border-bottom:1px solid var(--line);font-size:14px;gap:1rem}
+.sub-row:last-child{border-bottom:none}
+.share-row{display:flex;gap:.6rem;align-items:center}
+.lock-wall{display:flex;justify-content:center;padding:2.5rem 0}
+.lock-box{width:100%;max-width:390px;background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:2rem}
+.lock-box h3{font-size:23px;margin-bottom:.3rem}
+.lock-box p{color:var(--muted);margin-bottom:1.3rem}
+.lock-err{font-size:13px;color:#9b2c2c;margin-top:.7rem;display:none}
+
+/* ---------- footer ---------- */
+footer{background:var(--navy);color:#e9e4d6;padding:2.2rem max(2rem,calc(50% - 480px));margin-top:auto}
+.fwrap{display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap}
+.fmark{font-family:var(--serif);font-size:30px;font-weight:700;line-height:1;margin-bottom:.45rem}
+.fmark .f1{color:#e4786d}.fmark .f2{color:#7fa0e8}.fmark .f3{color:#77c47f}.fmark .f4{color:#dcbc5e}
+.fmark .fat{font-size:14px;font-weight:500;color:#cfc7b2;margin-left:.45rem}
+.fname{font-family:var(--serif);font-size:18px;color:#fff;line-height:1.3}
+.ftag{font-size:13px;color:#bfc6d2;margin-top:.15rem}
+.fright{text-align:right;font-size:13px;color:#bfc6d2;display:flex;flex-direction:column;align-items:flex-end;gap:.35rem}
+.fsite{font-family:var(--serif);font-size:16px;color:#fff}
+.secret{background:none;border:none;color:rgba(255,255,255,.28);font:inherit;font-size:12px;cursor:pointer;padding:0}
+.secret:hover{color:rgba(255,255,255,.75);text-decoration:underline}
+
+/* ---------- site editor panel ---------- */
+.emodal{position:fixed;inset:0;z-index:2000;display:none;background:rgba(20,28,40,.55)}
 .emodal.open{display:flex}
-.epanel{background:#fff;width:100%;max-width:520px;height:100%;overflow-y:auto;box-shadow:8px 0 32px rgba(0,0,0,.25);display:flex;flex-direction:column}
-.ehdr{background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);flex-shrink:0}
-.ehdr h3{color:#fff;font-size:15px;font-weight:500}
+.epanel{background:var(--sheet);width:100%;max-width:520px;height:100%;overflow-y:auto;box-shadow:8px 0 32px rgba(0,0,0,.25);display:flex;flex-direction:column}
+.ehdr{background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ehdr h3{color:#fff;font-size:18px}
+.ehdr .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.ehdr .btn:hover{background:rgba(255,255,255,.12)}
 .elock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center}
-.elock h4{font-size:18px;font-weight:500;margin-bottom:8px}
-.elock p{font-size:13px;color:#666;margin-bottom:1.5rem}
+.elock h4{font-size:21px;margin-bottom:.4rem}
+.elock p{color:var(--muted);margin-bottom:1.4rem}
 .ebody{flex:1;padding:1.5rem;display:none}
-.enav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:0.5px solid #eee}
-.enav button{padding:5px 12px;border:0.5px solid #ccc;background:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:#666}
-.enav button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.enav{display:flex;gap:1.3rem;margin-bottom:1.4rem;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.enav button{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:.45rem 0;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.enav button.active{color:var(--navy);border-bottom-color:var(--gold);font-weight:600}
 .esec{display:none}.esec.active{display:block}
 .cg{margin-bottom:1.5rem}
-.cg h4{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:0.5px solid #eee}
-.crow{display:flex;align-items:center;gap:12px;padding:.6rem 0;border-bottom:0.5px solid #eee}
+.cg h4{font-size:15px;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--line)}
+.crow{display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--line)}
 .crow:last-child{border-bottom:none}
-.ci{flex:1}.cl{font-size:13px;font-weight:500}.cd{font-size:11px;color:#999;margin-top:1px}
-.cc{flex-shrink:0;display:flex;align-items:center;gap:6px}
-.cc input[type=color]{width:36px;height:28px;padding:2px;border-radius:4px;cursor:pointer;border:0.5px solid #ccc}
-.cc input[type=range]{width:90px;border:none;box-shadow:none}
-.cc select,.cc input[type=text]{font-size:12px;padding:5px 8px;width:auto}
+.ci{flex:1}.cl{font-size:14px;font-weight:600}.cd{font-size:12px;color:var(--muted);margin-top:1px}
+.cc{flex-shrink:0;display:flex;align-items:center;gap:.4rem}
+.cc input[type=color]{width:36px;height:28px;padding:2px;cursor:pointer}
+.cc input[type=range]{width:90px;border:none;padding:0}
+.cc select,.cc input[type=text]{font-size:13px;padding:.35rem .5rem;width:auto}
 .cc input[type=text]{width:185px}
-.csw{width:20px;height:20px;border-radius:3px;border:0.5px solid #ccc;flex-shrink:0}
-.szv{font-size:11px;width:30px;text-align:right;color:#999}
-.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--navy);color:#fff;font-size:13px;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;border:1px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.csw{width:20px;height:20px;border-radius:3px;border:1px solid #cdc4b0;flex-shrink:0}
+.szv{font-size:12px;width:34px;text-align:right;color:var(--muted)}
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:14px;padding:.6rem 1.1rem;border-radius:4px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9999;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:4px}
-@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:640px){
+  .nav{padding:.7rem 1rem}
+  .panel{padding:1.6rem 1rem 2.5rem}
+  .sh h2{font-size:29px}
+  .sh p.lede{font-size:16px}
+  .fg2,.fg3{grid-template-columns:1fr}
+  .email-box{padding:1.2rem 1.1rem}
+  .leg-card .btn{width:100%}
+  footer{padding:1.8rem 1rem}
+  .fright{align-items:flex-start;text-align:left}
+}
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 <nav class="nav">
-  <div class="nav-brand"><div class="seal">VA</div><span id="nb">Virginia Civic Action Hub</span></div>
+  <div class="brand" id="nb"><span class="b1">S</span><span class="b2">E</span><span class="b3">R</span><span class="b4">V</span><span class="pat">Pat</span></div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPanel('citizen',this)">Citizen Portal</button>
-    <button class="nav-tab" onclick="showPanel('admin',this)">🔒 Admin</button>
-    <button class="nav-tab" onclick="showPanel('listserv',this)">🔒 Listserv</button>
+    <button class="nav-tab active" onclick="showPanel('citizen',this)">Home</button>
+    <button class="nav-tab" onclick="showPanel('admin',this)">Admin</button>
+    <button class="nav-tab" onclick="showPanel('listserv',this)">Listserv</button>
   </div>
 </nav>
 <div class="main">
 <!-- CITIZEN PANEL -->
 <div class="panel active" id="panel-citizen">
-  <div class="sh"><h2 id="ch">Make your voice heard in Richmond</h2><p>Find your legislators and send a pre-written email about bills that matter — in under 60 seconds.</p></div>
-  <div class="steps">
-    <div class="step"><div class="snum">1</div><span>Find your rep</span></div>
-    <div class="sarrow">→</div>
-    <div class="step"><div class="snum">2</div><span>Pick a bill</span></div>
-    <div class="sarrow">→</div>
-    <div class="step"><div class="snum">3</div><span>Send your email</span></div>
+  <div class="sh">
+    <h2 id="ch">Write to your legislators.</h2>
+    <p class="lede">Enter your address, choose a bill we're working on, and we'll draft the email. You read it, add your name, and send it from your own account.</p>
   </div>
-  <div class="hero">
-    <h2>Step 1 — Find your Virginia legislators</h2>
-    <p>Select your city or county to see your Senate and House of Delegates members.</p>
-    <div class="loc-wrap"><select id="citizen-loc" onchange="findLegislators()"><option value="">Select your city or county…</option></select></div>
-  </div>
+
+  <section class="step-sec">
+    <h3 class="step-h"><span class="step-n">1.</span>Find your legislators</h3>
+    <p class="step-p">Your home address tells us which state senator and which delegate represent you.</p>
+    <div class="addr-row">
+      <input type="text" id="addr-input" placeholder="Street address, city, ZIP" autocomplete="street-address" onkeydown="if(event.key==='Enter')lookupAddress()">
+      <button class="btn btn-navy" id="addr-btn" onclick="lookupAddress()">Find my legislators</button>
+    </div>
+    <p class="addr-note">Your address goes only to the U.S. Census Bureau's geocoder, which tells us your districts. We never save it.</p>
+    <div class="addr-msg" id="addr-msg"></div>
+    <div class="or-row"><label for="citizen-loc">Or choose a city or county</label>
+      <select id="citizen-loc" onchange="findLegislators()"><option value="">Select your city or county…</option></select></div>
+  </section>
+
   <div id="leg-section" style="display:none">
-    <h3 style="font-size:14px;font-weight:500;margin-bottom:10px;color:#666;text-transform:uppercase;letter-spacing:.04em">Your legislators</h3>
+    <div class="leg-note" id="leg-note"></div>
     <div class="leg-grid" id="leg-results"></div>
   </div>
-  <div id="bills-section" style="display:none">
-    <h3 style="font-size:14px;font-weight:500;margin-bottom:10px;color:#666;text-transform:uppercase;letter-spacing:.04em">Step 2 — Bills we're working on</h3>
+
+  <section class="step-sec" id="bills-section" style="display:none">
+    <h3 class="step-h"><span class="step-n">2.</span>Choose a bill</h3>
+    <p class="writing-to" id="writing-to"></p>
     <div class="frow">
-      <input type="text" placeholder="Search bills…" oninput="filterBills(this.value)" id="bill-search">
+      <input type="text" placeholder="Search bills" oninput="filterBills(this.value)" id="bill-search">
       <select onchange="filterBills(document.getElementById('bill-search').value,this.value)" id="topic-filter"><option value="">All topics</option></select>
     </div>
     <div id="bill-list"></div>
-  </div>
+  </section>
+
   <div id="email-section"></div>
-  <div class="signup-banner">
-    <div><h3>Stay in the loop</h3><p>Get action alerts when new bills need your voice.</p></div>
+
+  <section class="signup">
+    <h3>Get an email when a bill needs attention</h3>
+    <p>Join our email list and we'll let you know when there's something to act on.</p>
     <div class="sf">
       <input type="text" id="signup-name" placeholder="Your name">
       <input type="email" id="signup-email" placeholder="Your email address">
-      <button class="btn btn-gold" onclick="citizenSignup()">Join listserv</button>
+      <button class="btn btn-navy" onclick="citizenSignup()">Join the list</button>
     </div>
-  </div>
-  <div id="signup-msg" style="font-size:13px;text-align:center;margin-top:10px;display:none"></div>
+    <div id="signup-msg" class="signup-msg"></div>
+  </section>
 </div>
+
 <!-- ADMIN PANEL: lock wall always shown; content injected by JS after auth (Fix #2) -->
 <div class="panel" id="panel-admin">
   <div class="lock-wall" id="admin-lock">
     <div class="lock-box">
-      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
-      <h3>Admin access</h3><p>Sign in with your administrator account.</p>
+      
+      <h3>Admin sign-in</h3><p>For SERVPat officers. Use the account an existing admin set up for you.</p>
       <div class="fg" style="margin-bottom:10px"><div><label>Email</label><input type="email" id="admin-email" placeholder="your@email.com"></div></div>
       <div class="fg" style="margin-bottom:14px"><div><label>Password</label><input type="password" id="admin-pw" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"></div></div>
       <button class="btn btn-navy" style="width:100%;justify-content:center" onclick="adminLogin()" id="admin-btn">Sign in</button>
@@ -233,8 +310,8 @@ footer{background:var(--navy);border-top:3px solid var(--gold);padding:1.25rem 2
 <div class="panel" id="panel-listserv">
   <div class="lock-wall" id="ls-lock">
     <div class="lock-box">
-      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
-      <h3>Listserv access</h3><p>Sign in with your administrator account.</p>
+      
+      <h3>Listserv sign-in</h3><p>For SERVPat officers. Use the account an existing admin set up for you.</p>
       <div class="fg" style="margin-bottom:10px"><div><label>Email</label><input type="email" id="ls-email" placeholder="your@email.com"></div></div>
       <div class="fg" style="margin-bottom:14px"><div><label>Password</label><input type="password" id="ls-pw" placeholder="Password" onkeydown="if(event.key==='Enter')lsLogin()"></div></div>
       <button class="btn btn-navy" style="width:100%;justify-content:center" onclick="lsLogin()" id="ls-btn">Sign in</button>
@@ -245,28 +322,24 @@ footer{background:var(--navy);border-top:3px solid var(--gold);padding:1.25rem 2
 </div>
 </div>
 <footer>
-  <div class="fl">
-    <div class="flogo">
-      <span class="fll" style="color:#c0392b">S</span><span class="fll" style="color:#2e4a8a">E</span><span class="fll" style="color:#3a7a3a">R</span><span class="fll" style="color:#c8a84b">V</span>
-      <span style="font-size:12px;color:var(--gold);margin-left:3px;align-self:flex-end;padding-bottom:5px;font-family:Georgia,serif">at UVA</span>
-    </div>
-    <div class="fdiv"></div>
+  <div class="fwrap">
     <div>
-      <div style="color:rgba(255,255,255,.75);font-weight:500;font-size:12px">Student Environmental Reform &amp; Advocacy</div>
-      <div class="ftag" id="ftag">Empowering civic action at the University of Virginia</div>
+      <div class="fmark"><span class="f1">S</span><span class="f2">E</span><span class="f3">R</span><span class="f4">V</span><span class="fat">at UVA</span></div>
+      <div class="fname">Students for Equity and Reform in Virginia</div>
+      <div class="ftag" id="ftag">A student organization at the University of Virginia.</div>
     </div>
-  </div>
-  <div class="fr">
-    <div class="flinks"><div style="color:rgba(255,255,255,.5)">Virginia Civic Action Hub</div><div><a href="#">vacivicaction.org</a></div></div>
-    <button class="secret" onclick="openEditor()">⚙</button>
+    <div class="fright">
+      <span class="fsite">SERVPat</span>
+      <button class="secret" onclick="openEditor()">Site editor</button>
+    </div>
   </div>
 </footer>
 <!-- SITE EDITOR -->
 <div class="emodal" id="editor-modal">
   <div class="epanel">
-    <div class="ehdr"><h3>⚙ Site Editor</h3><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeEditor()">✕ Close</button></div>
+    <div class="ehdr"><h3>Site editor</h3><button class="btn btn-sm" onclick="closeEditor()">Close</button></div>
     <div class="elock" id="elock">
-      <div style="font-size:36px;margin-bottom:1rem">🔒</div>
+      
       <h4>Editor access</h4><p>Sign in with your admin account.</p>
       <div class="fg" style="margin-bottom:10px;width:100%;max-width:300px"><div><label>Email</label><input type="email" id="e-email" placeholder="your@email.com"></div></div>
       <div class="fg" style="margin-bottom:14px;width:100%;max-width:300px"><div><label>Password</label><input type="password" id="e-pw" placeholder="Password" onkeydown="if(event.key==='Enter')editorLogin()"></div></div>
@@ -293,10 +366,10 @@ footer{background:var(--navy);border-top:3px solid var(--gold);padding:1.25rem 2
       </div>
       <div class="esec" id="etab-txt">
         <div class="cg"><h4>Key text</h4>
-          <div class="crow"><div class="ci"><div class="cl">Site name</div></div><div class="cc"><input type="text" value="Virginia Civic Action Hub" oninput="document.getElementById('nb').textContent=this.value"></div></div>
-          <div class="crow"><div class="ci"><div class="cl">Page heading</div></div><div class="cc"><input type="text" value="Make your voice heard in Richmond" oninput="document.getElementById('ch').textContent=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Site name</div></div><div class="cc"><input type="text" value="SERVPat" oninput="document.getElementById('nb').textContent=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Page heading</div></div><div class="cc"><input type="text" value="Write to your legislators." oninput="document.getElementById('ch').textContent=this.value"></div></div>
           <div class="crow"><div class="ci"><div class="cl">Portal URL</div><div class="cd">Your GitHub Pages address</div></div><div class="cc"><input type="text" id="portal-url-inp" value="https://nattaylor51.github.io/va-civic-hub" oninput="if(document.getElementById('share-link'))document.getElementById('share-link').value=this.value"></div></div>
-          <div class="crow"><div class="ci"><div class="cl">Footer tagline</div></div><div class="cc"><input type="text" value="Empowering civic action at the University of Virginia" oninput="document.getElementById('ftag').textContent=this.value"></div></div>
+          <div class="crow"><div class="ci"><div class="cl">Footer tagline</div></div><div class="cc"><input type="text" value="A student organization at the University of Virginia." oninput="document.getElementById('ftag').textContent=this.value"></div></div>
         </div>
         <button class="btn btn-sm btn-red" onclick="if(confirm('Reset all styles?')){location.reload()}">↺ Reset styles</button>
       </div>
@@ -315,6 +388,8 @@ const sb=createClient(
 let currentUser=null;
 let templates=[];
 let legislators={};
+let legislatorsLoadError='';
+let legislatorsLoaded=false; // true only after a successful read; blocks accidental overwrites
 let topics=['Environmental Justice','Economic Justice','Education','Healthcare','Gun Reform','Criminal Justice'];
 let subscribers=[];
 let topicsDbId=null;
@@ -409,18 +484,18 @@ async function editorLogin(){
 function renderAdminShell(){
   g('admin-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-      <div class="sh" style="margin-bottom:0"><h2>Admin panel</h2><p>All changes save to Supabase instantly.</p></div>
-      <button class="btn btn-sm btn-red" onclick="adminLogout()">🔒 Sign out</button>
+      <div class="sh" style="margin-bottom:0"><h2>Admin</h2><p>Changes are saved as soon as you make them.</p></div>
+      <button class="btn btn-sm btn-red" onclick="adminLogout()">Sign out</button>
     </div>
     <div class="atabs">
-      <button class="atab active" onclick="switchTab('stats',this)">📊 Usage</button>
-      <button class="atab" onclick="switchTab('templates',this)">📋 Templates</button>
-      <button class="atab" onclick="switchTab('topics',this)">🏷️ Topics</button>
-      <button class="atab" onclick="switchTab('legislators',this)">👤 Legislators</button>
+      <button class="atab active" onclick="switchTab('stats',this)">Usage</button>
+      <button class="atab" onclick="switchTab('templates',this)">Templates</button>
+      <button class="atab" onclick="switchTab('topics',this)">Topics</button>
+      <button class="atab" onclick="switchTab('legislators',this)">Legislators</button>
     </div>
     <!-- STATS TAB -->
     <div class="asec active" id="atab-stats">
-      <div class="sh"><h2>Usage stats</h2><p>Tracks how many times each bill template has been opened by a citizen.</p></div>
+      <div class="sh"><h2>Usage stats</h2><p>How many times people have opened each bill's draft email.</p></div>
       <div class="stat-grid" id="stat-summary"></div>
       <div class="card"><div class="card-title">Email opens per template</div><div id="usage-chart"><div class="empty"><p>Loading…</p></div></div></div>
     </div>
@@ -429,16 +504,16 @@ function renderAdminShell(){
       <div class="card">
         <div class="card-title" id="tform-title">Create new template</div>
         <div class="fg-gold">
-          <div class="fg-label">📋 Bill info</div>
+          <div class="fg-label">Bill details</div>
           <div class="fg fg2" style="margin-bottom:10px">
             <div><label>Bill number</label><input type="text" id="f-bill" placeholder="e.g. HB 1234"></div>
             <div><label>Topic</label><select id="f-topic"></select></div>
           </div>
           <div><label>Bill title</label><input type="text" id="f-title" placeholder="e.g. Clean Energy Act"></div>
-          <div style="margin-top:10px"><label>Citizen-facing description</label><textarea id="f-desc" rows="2" placeholder="Why this bill matters…"></textarea></div>
+          <div style="margin-top:10px"><label>Description (shown to the public)</label><textarea id="f-desc" rows="2" placeholder="Why this bill matters…"></textarea></div>
         </div>
         <div class="fg-gold">
-          <div class="fg-label">👤 Patrons &amp; committee members</div>
+          <div class="fg-label">Patrons and committee members</div>
           <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
             <input type="text" id="patron-inp" placeholder="Legislator name…" style="flex:1;min-width:150px">
             <select id="patron-type" style="width:160px"><option value="patron">Primary patron</option><option value="committee">Committee member</option></select>
@@ -447,22 +522,22 @@ function renderAdminShell(){
           <div id="patron-chips"></div>
         </div>
         <div class="fg-gold">
-          <div class="fg-label">✉️ Email template</div>
+          <div class="fg-label">The email</div>
           <div style="margin-bottom:10px"><label>Subject line</label><input type="text" id="f-subj" placeholder="Please Support HB 1234 – Title"></div>
-          <div><label>Body — use {LEGISLATOR_NAME} and {YOUR_NAME}</label><textarea id="f-body" rows="9" placeholder="Dear {LEGISLATOR_NAME},&#10;&#10;…&#10;&#10;Sincerely,&#10;{YOUR_NAME}"></textarea></div>
+          <div><label>Body (use {LEGISLATOR_NAME} and {YOUR_NAME} where the names go)</label><textarea id="f-body" rows="9" placeholder="Dear {LEGISLATOR_NAME},&#10;&#10;…&#10;&#10;Sincerely,&#10;{YOUR_NAME}"></textarea></div>
         </div>
         <div class="fg-gold">
-          <div class="fg-label">⚙️ Settings</div>
+          <div class="fg-label">Visibility</div>
           <div class="fg fg2">
             <div><label>Status</label><select id="f-status"><option value="active">Active (visible)</option><option value="draft">Draft (hidden)</option></select></div>
             <div><label>Priority (1 = top)</label><input type="number" id="f-priority" value="1" min="1"></div>
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-navy" onclick="saveTemplate()" id="save-tmpl-btn">💾 Save template</button>
-          <button class="btn" onclick="clearTForm()">✕ Clear</button>
+          <button class="btn btn-navy" onclick="saveTemplate()" id="save-tmpl-btn">Save template</button>
+          <button class="btn" onclick="clearTForm()">Clear</button>
         </div>
-        <div id="save-msg" style="margin-top:10px;font-size:13px;color:#1b5e20;display:none">✓ Template saved!</div>
+        <div id="save-msg" style="margin-top:10px;font-size:13px;color:#1b5e20;display:none">Template saved!</div>
       </div>
       <div class="sh" style="margin-top:1.5rem"><h2>Existing templates</h2><p id="tmpl-count"></p></div>
       <div id="template-list"></div>
@@ -471,18 +546,18 @@ function renderAdminShell(){
     <div class="asec" id="atab-topics">
       <div class="card">
         <div class="card-title">Manage topics</div>
-        <p style="font-size:13px;color:#666;margin-bottom:12px">Changes save to Supabase immediately.</p>
+        <p style="font-size:13px;color:#666;margin-bottom:12px">Changes are saved right away.</p>
         <div id="topic-pills"></div>
         <div style="display:flex;gap:8px;margin-top:14px">
           <input type="text" id="new-topic" placeholder="New topic name…" style="flex:1;max-width:280px" onkeydown="if(event.key==='Enter')addTopic()">
           <button class="btn btn-navy btn-sm" onclick="addTopic()">+ Add topic</button>
         </div>
-        <div id="topic-msg" style="font-size:12px;color:#1b5e20;margin-top:8px;display:none">✓ Saved.</div>
+        <div id="topic-msg" style="font-size:12px;color:#1b5e20;margin-top:8px;display:none">Saved.</div>
       </div>
     </div>
     <!-- LEGISLATORS TAB -->
     <div class="asec" id="atab-legislators">
-      <div class="notice" style="margin-bottom:1rem">164th Virginia General Assembly (2026). Senate emails use verified <code>senator[lastname]@senate.virginia.gov</code> format. All data stored in Supabase — nothing hardcoded.</div>
+      <div class="notice" style="margin-bottom:1rem">Legislators for the 164th Virginia General Assembly. Changes you make here are saved right away. Please check email addresses against the official member pages before you rely on them.</div>
       <div class="card" style="margin-bottom:1rem">
         <div class="card-title">Add legislator</div>
         <div class="fg fg2" style="margin-bottom:10px">
@@ -495,7 +570,7 @@ function renderAdminShell(){
           <div><label>Email</label><input type="text" id="leg-email" placeholder="senator…@senate.virginia.gov"></div>
         </div>
         <button class="btn btn-navy btn-sm" onclick="addLeg()">+ Add legislator</button>
-        <div id="leg-add-msg" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Added.</div>
+        <div id="leg-add-msg" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">Added.</div>
       </div>
       <div class="card">
         <div class="card-title">Current legislators</div>
@@ -527,30 +602,32 @@ function renderLsShell(){
   const url=g('portal-url-inp')?g('portal-url-inp').value:portalURL;
   g('ls-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
-      <div class="sh" style="margin-bottom:0"><h2>Listserv &amp; outreach</h2><p>All data stored securely in Supabase.</p></div>
-      <button class="btn btn-sm btn-red" onclick="lsLogout()">🔒 Sign out</button>
+      <div class="sh" style="margin-bottom:0"><h2>Listserv</h2><p>Manage the email list and send updates.</p></div>
+      <button class="btn btn-sm btn-red" onclick="lsLogout()">Sign out</button>
     </div>
     <div class="card">
-      <div class="card-title">Citizen portal link</div>
-      <p style="font-size:13px;color:#666;margin-bottom:10px">Share this link — citizens find their rep and send emails in under a minute.</p>
+      <div class="card-title">Link to the public page</div>
+      <p style="font-size:13px;color:#666;margin-bottom:10px">Share this link so people can find their legislators and send an email.</p>
       <div class="share-row"><input type="text" id="share-link" value="${url}" readonly style="flex:1"><button class="btn btn-gold btn-sm" onclick="copyLink()">Copy</button></div>
-      <div id="copy-ok" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Copied!</div>
-      <p style="font-size:12px;color:#999;margin-top:8px">Update this URL in the Site Editor (⚙ footer button).</p>
+      <div id="copy-ok" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">Copied!</div>
+      <p style="font-size:12px;color:#999;margin-top:8px">You can change this address in the Site editor (the link at the bottom of the page).</p>
     </div>
     <div class="card">
-      <div class="card-title">Compose action alert</div>
-      <div class="notice">Opens a draft in your email client pre-addressed to all subscribers.</div>
-      <div class="fg" style="margin-bottom:12px"><div><label>Subject</label><input type="text" id="alert-subj" value="Action needed: Important bills in the Virginia General Assembly"></div></div>
-      <div class="fg" style="margin-bottom:12px"><div><label>Message body</label><textarea id="alert-body" rows="9">Hello,
+      <div class="card-title">Write an update</div>
+      <div class="notice">Opens a draft in your email app, addressed to everyone on the list.</div>
+      <div class="fg" style="margin-bottom:12px"><div><label>Subject</label><input type="text" id="alert-subj" value="Bills that need your help this week"></div></div>
+      <div class="fg" style="margin-bottom:12px"><div><label>Message body</label><textarea id="alert-body" rows="12">Hi,
 
-We need your help this week! Several important bills are being considered in the Virginia General Assembly and your voice matters.
+A few bills in the Virginia General Assembly could use your help this week.
 
-The important bills include:
-- [BILL NUMBER] – [BILL TITLE]: [Brief sentence on why it matters]
+- [BILL NUMBER], [BILL TITLE]: [One sentence on why it matters]
 
-Click the link below to find your legislator and send a pre-written email in under a minute.</textarea></div></div>
-      <div style="font-size:12px;color:#666;margin-bottom:1rem;padding:8px 10px;background:#f5f5f5;border-radius:6px;border-left:3px solid var(--gold)">✏️ Fill in bill details above before sending. The portal link is appended automatically.</div>
-      <button class="btn btn-navy" onclick="composeAlert()">✉️ Open in email client</button>
+You can look up your legislators and send them a short email using the link below. It only takes a couple of minutes.
+
+Thank you,
+Students for Equity and Reform in Virginia</textarea></div></div>
+      <div style="font-size:12px;color:#666;margin-bottom:1rem;padding:8px 10px;background:#f5f5f5;border-radius:6px;border-left:3px solid var(--gold)">Fill in the bill details above before you send. The portal link is added for you.</div>
+      <button class="btn btn-navy" onclick="composeAlert()">Open in email client</button>
     </div>
     <div class="sh" style="margin-top:1.5rem"><h2>Subscribers</h2><p id="sub-count"></p></div>
     <div class="card">
@@ -598,7 +675,7 @@ async function removeTopic(i){
 async function saveTopics(){
   if(topicsDbId) await sb.from('topics').update({list:topics}).eq('id',topicsDbId);
   else{const {data}=await sb.from('topics').insert({list:topics}).select().single();if(data) topicsDbId=data.id;}
-  toast('✓ Topics saved');
+  toast('Topics saved');
 }
 
 // ── PATRONS ──
@@ -616,22 +693,48 @@ function renderPatronChips(){
 
 // ── LEGISLATORS: loaded from Supabase only — no hardcoded data (Fix #1) ──
 async function loadLegislators(){
-  const {data}=await sb.from('legislators').select('*').limit(1).maybeSingle();
-  if(data){legislators=data.data;legDbId=data.id;}
+  try{
+    const {data,error}=await sb.from('legislators').select('*').limit(1).maybeSingle();
+    if(error){legislatorsLoadError=String(error.message||JSON.stringify(error));console.error('[legislators] load error: '+legislatorsLoadError);}
+    else{
+      legislatorsLoaded=true;
+      if(data){
+        legDbId=data.id;
+        legislators=(data.data&&typeof data.data==='object'&&!Array.isArray(data.data))?data.data:{};
+        if(!Object.keys(legislators).length) console.warn('[legislators] row exists but its data is empty or null');
+      }else console.warn('[legislators] table has no rows');
+    }
+  }catch(e){
+    legislatorsLoadError=String((e&&e.message)||e);
+    console.error('[legislators] load failed: '+legislatorsLoadError);
+    legislators={};
+  }
   initLocalityDropdown();
 }
 async function saveLeg(){
+  if(!legislatorsLoaded){toast('Legislator data did not load, so nothing was saved (this protects your existing data). Refresh and try again.',5000);return;}
   if(legDbId) await sb.from('legislators').update({data:legislators}).eq('id',legDbId);
   else{const {data}=await sb.from('legislators').insert({data:legislators}).select().single();if(data) legDbId=data.id;}
-  toast('✓ Legislators saved');
+  toast('Legislators saved');
 }
 function initials(n){return n.split(' ').filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase();}
 function initLocalityDropdown(){
-  const sel=g('citizen-loc');if(!sel)return;
-  const prev=sel.value;
-  sel.innerHTML='<option value="">Select your city or county…</option>';
-  Object.keys(legislators).sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});
-  if(prev&&legislators[prev]) sel.value=prev;
+  const sel=g('citizen-loc');
+  if(sel){
+    const prev=sel.value;
+    sel.innerHTML='<option value="">Select your city or county…</option>';
+    Object.keys(legislators||{}).sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o);});
+    if(prev&&legislators[prev]) sel.value=prev;
+    if(!Object.keys(legislators||{}).length){
+      sel.innerHTML='<option value="">Legislator data unavailable</option>';
+      const why=legislatorsLoadError?(', reason: '+esc(legislatorsLoadError)):'';
+      showAddrMsg("Legislator data didn't load, so lookups won't work yet. Please refresh the page. If this keeps happening, contact the site admin. <span style=\"opacity:.6\">(code: no-data"+why+")</span>");
+    }else{
+      const m=g('addr-msg');if(m&&m.innerHTML.includes('code: no-data')) showAddrMsg('');
+    }
+  }
+  try{ buildDistrictIndex(); }
+  catch(e){ console.error('[district index] failed (county dropdown is unaffected):',e); districtIndex={}; }
 }
 function renderLegLocality(){
   const sel=g('leg-loc-sel');if(!sel)return;
@@ -670,7 +773,7 @@ function renderLegEditor(filter,chFilter){
       (d[ch]||[]).forEach((l,i)=>{
         if(filter&&!l.name.toLowerCase().includes(filter)&&!loc.toLowerCase().includes(filter))return;
         const sl=loc.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        rows+=`<div class="leg-row"><div class="ln">${l.name}</div><div class="lr">${l.role}</div><span class="lc ${ch==='senate'?'lc-s':'lc-h'}">${ch==='senate'?'Sen':'Del'}</span><button class="btn btn-sm btn-red" onclick="delLeg('${sl}','${ch}',${i})" style="padding:3px 7px;font-size:11px">✕</button></div>`;
+        rows+=`<div class="leg-row"><div class="ln">${l.name}</div><div class="lr">${l.role}</div><span class="lc ${ch==='senate'?'lc-s':'lc-h'}">${ch==='senate'?'Sen':'Del'}</span><button class="btn btn-sm btn-red" onclick="delLeg('${sl}','${ch}',${i})" >Remove</button></div>`;
       });
     });
     if(!rows)return;
@@ -726,8 +829,8 @@ async function saveTemplate(){
     if(r) newT._dbId=r.id;
   }
   currentPatrons=[];renderPatronChips();clearTForm();
-btn.innerHTML='💾 Save template';btn.disabled=false;
-toast('✓ Template saved');showMsg('save-msg');
+btn.innerHTML='Save template';btn.disabled=false;
+toast('Template saved');showMsg('save-msg');
 await loadTemplates();
 renderTemplateList();
 }
@@ -747,7 +850,7 @@ function renderTemplateList(){
     const ph=t.patrons&&t.patrons.length
       ?t.patrons.map(p=>`<span class="pchip"><span class="pt ${p.type==='patron'?'pt-p':'pt-c'}">${p.type==='patron'?'Patron':'Cmte'}</span>${p.name}</span>`).join('')
       :'<span style="font-size:12px;color:#999">None</span>';
-    return `<div class="tmpl-card"><div style="flex:1"><span class="tbill">${t.bill}</span><div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#666;line-height:1.5">${t.desc||'No description.'}</div><div style="margin-top:8px;font-size:12px;font-weight:500;margin-bottom:3px">Patrons:</div><div>${ph}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="tag">${t.topic}</span><span class="${t.status==='active'?'badge-on':'badge-off'}">${t.status==='active'?'Active':'Draft'}</span><span class="tag">Priority ${t.priority}</span><span class="tag">📬 ${t.use_count||0} opens</span></div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm" onclick="editTemplate(${t.id})">✏ Edit</button><button class="btn btn-sm btn-red" onclick="delTemplate(${t.id})">🗑</button></div></div>`;
+    return `<div class="tmpl-card"><div style="flex:1"><span class="tbill">${t.bill}</span><div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.title}</div><div style="font-size:13px;color:#666;line-height:1.5">${t.desc||'No description.'}</div><div style="margin-top:8px;font-size:12px;font-weight:500;margin-bottom:3px">Patrons:</div><div>${ph}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="tag">${t.topic}</span><span class="${t.status==='active'?'badge-on':'badge-off'}">${t.status==='active'?'Active':'Draft'}</span><span class="tag">Priority ${t.priority}</span><span class="tag">${t.use_count||0} opens</span></div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm" onclick="editTemplate(${t.id})">Edit</button><button class="btn btn-sm btn-red" onclick="delTemplate(${t.id})">Delete</button></div></div>`;
   }).join('');
 }
 function editTemplate(id){
@@ -763,7 +866,7 @@ function editTemplate(id){
   const topicEl=g('f-topic');if(topicEl&&t.topic) topicEl.value=t.topic;
   currentPatrons=[...(t.patrons||[])];renderPatronChips();
   const ft=g('tform-title');
-  ft.textContent='Edit template — '+t.bill;ft.dataset.editId=t.id;
+  ft.textContent='Editing '+t.bill;ft.dataset.editId=t.id;
   g('atab-templates').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function delTemplate(id){
@@ -771,7 +874,7 @@ async function delTemplate(id){
   const t=templates.find(x=>x.id===id);
   if(t&&t._dbId) await sb.from('templates').delete().eq('id',t._dbId);
   templates=templates.filter(x=>x.id!==id);
-  toast('✓ Template deleted');renderTemplateList();renderStats();
+  toast('Template deleted');renderTemplateList();renderStats();
 }
 
 // ── USAGE COUNTER ──
@@ -872,7 +975,7 @@ function renderSubscribers() {
                 : s.email}</div>
               <div style="font-size:12px;color:#999">Added ${s.added || ''}</div>
             </div>
-            <button class="btn btn-sm btn-red" onclick="delSub(${s.id})">🗑</button>
+            <button class="btn btn-sm btn-red" onclick="delSub(${s.id})">Remove</button>
           </div>`).join('')}
       ${filtered.length > 0 ? `
         <div style="padding:.6rem 1rem;font-size:12px;color:#999;border-top:0.5px solid #eee;text-align:right;background:#fafafa;border-radius:0 0 8px 8px">
@@ -906,13 +1009,13 @@ async function addSub(){
   if(error){toast(error.code==='23505'?'Already subscribed.':'Error: '+error.message);return;}
   subscribers.push(data);
   g('new-email').value='';g('new-name').value='';
-  toast('✓ Subscriber added');renderSubscribers();
+  toast('Subscriber added');renderSubscribers();
   const statsEl=g('stat-summary');if(statsEl) renderStats();
 }
 async function delSub(id){
   await sb.from('subscribers').delete().eq('id',id);
   subscribers=subscribers.filter(s=>s.id!==id);
-  toast('✓ Removed');renderSubscribers();
+  toast('Removed');renderSubscribers();
 }
 async function citizenSignup(){
   const email=g('signup-email').value.trim();
@@ -922,7 +1025,7 @@ async function citizenSignup(){
   const now=new Date();
   const added=now.toLocaleString('default',{month:'short'})+' '+now.getFullYear();
   const {error}=await sb.from('subscribers').insert({email,name:name||'',added});
-  msg.textContent=error?(error.code==='23505'?"✓ You're already on our listserv!":'Something went wrong. Try again.'):"✓ You've been added to our listserv!";
+  msg.textContent=error?(error.code==='23505'?"You're already on the list.":'Something went wrong. Try again.'):"You're on the list. Thank you.";
   msg.style.color=error&&error.code!=='23505'?'#a32d2d':'#1b5e20';
   msg.style.display='block';
   g('signup-email').value='';g('signup-name').value='';
@@ -930,16 +1033,177 @@ async function citizenSignup(){
 }
 
 // ── CITIZEN PORTAL ──
+// ── ADDRESS LOOKUP: U.S. Census Bureau geocoder (JSONP, no API key) ──
+let districtIndex={};
+let currentLegs=[];
+
+function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function districtKey(role){
+  const m=String(role||'').match(/^\s*(SD|HD)\D*0*(\d+)/i);
+  return m?m[1].toUpperCase()+'-'+parseInt(m[2],10):null;
+}
+
+// Index every legislator by district ("SD-39", "HD-4") using the data already in Supabase
+function buildDistrictIndex(){
+  districtIndex={};
+  Object.values(legislators||{}).forEach(loc=>{
+    ['senate','house'].forEach(ch=>{
+      const list=loc&&loc[ch];
+      if(!Array.isArray(list)) return;
+      list.forEach(l=>{
+        if(!l||typeof l!=='object') return;
+        const k=districtKey(l.role);
+        if(k&&!districtIndex[k]) districtIndex[k]=l;
+      });
+    });
+  });
+}
+
+function censusLookup(address){
+  return new Promise((resolve,reject)=>{
+    const cb='censusCb'+Date.now()+Math.floor(Math.random()*1000);
+    const script=document.createElement('script');
+    const timer=setTimeout(()=>{cleanup();reject(new Error('timeout'));},20000);
+    function cleanup(){clearTimeout(timer);delete window[cb];script.remove();}
+    window[cb]=data=>{cleanup();resolve(data);};
+    script.onerror=()=>{cleanup();reject(new Error('network'));};
+    const params=new URLSearchParams({address,benchmark:'Public_AR_Current',vintage:'Current_Current',layers:'all',format:'jsonp',callback:cb});
+    script.src='https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?'+params.toString();
+    document.head.appendChild(script);
+  });
+}
+
+function showAddrMsg(html){
+  const m=g('addr-msg');if(!m)return;
+  m.innerHTML=html;m.style.display=html?'block':'none';
+}
+
+// Pull the upper/lower district numbers out of a Census geocoder match
+function extractDistricts(match){
+  const geos=match.geographies||{};
+  const layer=re=>{const k=Object.keys(geos).find(x=>re.test(x));return k&&geos[k]&&geos[k][0]?geos[k][0]:null;};
+  const up=layer(/State Legislative Districts - Upper/i);
+  const lo=layer(/State Legislative Districts - Lower/i);
+  if(!up||!lo) return null;
+  const sd=parseInt(up.SLDU||up.BASENAME,10), hd=parseInt(lo.SLDL||lo.BASENAME,10);
+  if(isNaN(sd)||isNaN(hd)) return null;
+  return {sd,hd};
+}
+
+// Put the state before the ZIP so the Census parser reads it correctly: "Street, City, VA 23059"
+function normalizeAddress(a){
+  if(/\b(va|virginia)\b/i.test(a)) return a;
+  const m=a.match(/^(.*?)[\s,]*(\d{5}(?:-\d{4})?)\s*$/);
+  return m?(m[1]+', VA '+m[2]):(a+', VA');
+}
+
+async function lookupAddress(){
+  const inp=g('addr-input'), btn=g('addr-btn');
+  const raw=inp.value.trim();
+  showAddrMsg('');
+  if(raw.length<8){showAddrMsg('Please enter your street address, city, and ZIP code.');return;}
+  if(!Object.keys(districtIndex).length){
+    showAddrMsg("Legislator data didn't load, so we can't show your legislators yet. Please refresh and try again. <span style=\"opacity:.6\">(code: no-data)</span>");
+    return;
+  }
+  const addr=normalizeAddress(raw);
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Searching…';
+  try{
+    // Step 1: ask the Census Bureau. Failures here are about the service or the browser.
+    let data;
+    try{
+      data=await censusLookup(addr);
+    }catch(e){
+      console.error('[address lookup] Census request failed:',e);
+      if(e&&e.message==='timeout'){
+        showAddrMsg('The lookup timed out. The Census Bureau service can be slow, so please try again, or browse by city / county below. <span style="opacity:.6">(code: census-timeout)</span>');
+      }else{
+        showAddrMsg("Your browser couldn't load the Census Bureau's response. A browser privacy/ad blocker may be stopping it, or the service may be down. Please try again, or browse by city / county below. <span style=\"opacity:.6\">(code: census-blocked)</span>");
+      }
+      return;
+    }
+    console.debug('[address lookup] Census response:',data);
+
+    // Step 2: read the answer and show results. Failures here are bugs in this page, not the service.
+    try{
+      const matches=(data&&data.result&&data.result.addressMatches)||[];
+      if(!matches.length){
+        showAddrMsg("We couldn't match that address. Check the spelling and include the city and ZIP, or browse by city / county below.");
+        return;
+      }
+      const m=matches[0];
+      const st=m.addressComponents&&m.addressComponents.state;
+      if(st&&st!=='VA'){showAddrMsg('That address is outside Virginia, and this tool covers the Virginia General Assembly.');return;}
+      const d=extractDistricts(m);
+      if(!d){
+        console.warn('[address lookup] No legislative districts in response. Layers returned:',Object.keys(m.geographies||{}));
+        showAddrMsg('We found the address but could not determine its legislative districts. Try the city / county list below, or use the <a href="https://whosmy.virginiageneralassembly.gov/" target="_blank" rel="noopener">official Virginia lookup</a>. <span style="opacity:.6">(code: no-districts)</span>');
+        return;
+      }
+      const pick=(prefix,label,num)=>districtIndex[prefix+'-'+num]||{name:label+' District '+num,role:prefix+' '+num,email:'',initials:'??',missing:true};
+      currentLegs=[pick('SD','Senate',d.sd),pick('HD','House',d.hd)];
+      g('citizen-loc').value='';
+      renderLegCards(currentLegs,
+        'We matched <strong>'+esc(m.matchedAddress)+'</strong> to Senate District '+d.sd+' and House District '+d.hd+'. You can double-check this on the <a href="https://whosmy.virginiageneralassembly.gov/" target="_blank" rel="noopener">official Virginia lookup</a>.');
+      g('leg-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+    }catch(e){
+      console.error('[address lookup] Error while showing results:',e);
+      showAddrMsg('Something went wrong while showing your results. Please browse by city / county below. <span style="opacity:.6">(code: display-error: '+esc(e&&e.message)+')</span>');
+    }
+  }finally{
+    btn.disabled=false;btn.textContent='Find my legislators';
+  }
+}
+
+function roleLabel(role){
+  const m=String(role||'').match(/^\s*(SD|HD)\D*0*(\d+)/i);
+  if(!m) return esc(role||'');
+  return (m[1].toUpperCase()==='SD'?'State Senator':'Delegate')+', District '+parseInt(m[2],10);
+}
+
+function updateWritingTo(){
+  const w=g('writing-to');if(!w)return;
+  w.innerHTML=selectedLeg
+    ?'Writing to <strong>'+esc(selectedLeg.name)+'</strong> ('+roleLabel(selectedLeg.role)+').'
+    :'Choose a legislator above to address the email to them. You can also open any bill to read the draft first.';
+}
+
+function renderLegCards(list,note){
+  selectedLeg=null;
+  g('email-section').innerHTML='';
+  g('leg-section').style.display='block';
+  const n=g('leg-note');if(n) n.innerHTML=note||'';
+  g('leg-results').innerHTML=list.map((l,i)=>{
+    const action=l.email
+      ?`<button class="btn btn-sm" id="pick-${i}" onclick="selectLegIdx(${i})">Email this legislator</button>`
+      :`<span class="leg-role">${l.missing?'No contact information on file yet':'This seat is currently vacant'}</span>`;
+    return `<div class="leg-card" id="leg-card-${i}"><div><div class="leg-name">${esc(l.name)}</div><div class="leg-role">${roleLabel(l.role)}</div></div>${action}</div>`;
+  }).join('');
+  updateWritingTo();
+  g('bills-section').style.display='block';
+  renderTopicSelects();renderBillList();
+}
+
+function selectLegIdx(i){
+  if(!currentLegs[i])return;
+  selectedLeg=currentLegs[i];
+  document.querySelectorAll('.leg-card').forEach(el=>el.classList.remove('on'));
+  const card=g('leg-card-'+i);if(card)card.classList.add('on');
+  document.querySelectorAll('[id^="pick-"]').forEach(b=>{b.textContent='Email this legislator';});
+  const b=g('pick-'+i);if(b)b.textContent='Selected';
+  updateWritingTo();
+  renderBillList();
+  g('email-section').innerHTML='';
+}
+
+// County / city fallback (lists everyone whose district touches the locality)
 function findLegislators(){
   const loc=g('citizen-loc').value;if(!loc)return;
   const d=legislators[loc];if(!d)return;
-  g('leg-section').style.display='block';
-  const all=[...(d.senate||[]),...(d.house||[])];
-  g('leg-results').innerHTML=all.map(l=>
-    `<div class="leg-card"><div class="av">${l.initials||'??'}</div><div><div style="font-size:14px;font-weight:500;margin-bottom:2px">${l.name}</div><div style="font-size:12px;color:#666;margin-bottom:6px">${l.role}</div>${l.email?`<button class="btn btn-sm btn-gold" onclick='selectLeg(${JSON.stringify(JSON.stringify(l))})'>✉ Email this rep</button>`:'<span style="font-size:12px;color:#999">Seat currently vacant</span>'}</div></div>`
-  ).join('');
-  g('bills-section').style.display='block';
-  renderTopicSelects();renderBillList();
+  showAddrMsg('');
+  currentLegs=[...(d.senate||[]),...(d.house||[])];
+  renderLegCards(currentLegs,'These are all the legislators whose districts touch <strong>'+esc(loc)+'</strong>. Larger places can span several districts, so your address is the surest way to find yours.');
 }
 function selectLeg(j){selectedLeg=JSON.parse(j);renderBillList();g('email-section').innerHTML='';}
 function renderBillList(filter,topic){
@@ -950,12 +1214,15 @@ function renderBillList(filter,topic){
     return(!q||t.title.toLowerCase().includes(q)||t.bill.toLowerCase().includes(q)||(t.desc||'').toLowerCase().includes(q))&&(!topic||t.topic===topic);
   });
   const c=g('bill-list');
-  if(!f.length){c.innerHTML='<div class="empty"><p>No matching bills.</p></div>';return;}
+  if(!f.length){c.innerHTML='<div class="empty"><p>No bills match that search.</p></div>';return;}
   c.innerHTML=f.map(t=>{
-    const ph=t.patrons&&t.patrons.length?`<div style="margin-top:8px">${t.patrons.map(p=>`<span class="pchip" style="font-size:11px"><span class="pt ${p.type==='patron'?'pt-p':'pt-c'}">${p.type==='patron'?'Patron':'Committee'}</span>${p.name}</span>`).join('')}</div>`:'';
-    return `<div class="bill-card" onclick="showEmailPreview(${t.id})"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px"><span class="bill-num">${t.bill}</span><span class="tag">${t.topic}</span></div><h3 style="font-size:15px;font-weight:500;margin-bottom:4px">${t.title}</h3><p style="font-size:13px;color:#666;line-height:1.5">${t.desc||''}</p>${ph}<div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--navy);font-weight:500">✉ Click to email ${selectedLeg?selectedLeg.name:'your representative'}</div></div>`;
+    const names=type=>(t.patrons||[]).filter(p=>p.type===type).map(p=>esc(p.name)).join(', ');
+    const lead=names('patron'), cmte=names('committee');
+    const who=[lead?'Patron: '+lead:'',cmte?'Committee: '+cmte:''].filter(Boolean).join('. ');
+    return `<article class="bill-card" onclick="showEmailPreview(${t.id})"><div class="bill-top"><span class="bill-num">${esc(t.bill)}</span><span>${esc(t.topic)}</span></div><h4 class="bill-title">${esc(t.title)}</h4><p class="bill-desc">${esc(t.desc||'')}</p>${who?`<p class="bill-patrons">${who}</p>`:''}<span class="bill-cta">Draft this email</span></article>`;
   }).join('');
 }
+
 function filterBills(q,topic){
   topic=topic!==undefined?topic:g('topic-filter').value;
   renderBillList(q,topic);
@@ -966,20 +1233,21 @@ async function showEmailPreview(id){
   const leg=selectedLeg||{name:'[Your Legislator]',email:'',role:''};
   const body=t.body.replace(/{LEGISLATOR_NAME}/g,leg.name).replace(/{YOUR_NAME}/g,'[Your Name]');
   g('email-section').innerHTML=`
-    <div class="email-box open">
+    <div class="email-box">
+      <h3 class="step-h"><span class="step-n">3.</span>Review and send</h3>
       <div class="email-hdr">
-        <p><strong>To:</strong> ${leg.name} (${leg.role})</p>
-        <p><strong>Email:</strong> ${leg.email||'Select a legislator above first'}</p>
-        <p><strong>Subject:</strong> ${t.subject}</p>
+        <p><strong>To</strong><span>${esc(leg.name)}${leg.role?' ('+roleLabel(leg.role)+')':''}</span></p>
+        <p><strong>Email</strong><span>${esc(leg.email)||'Choose a legislator above first'}</span></p>
+        <p><strong>Subject</strong><span>${esc(t.subject)}</span></p>
       </div>
-      <div style="font-size:12px;color:#999;margin-bottom:10px">Preview — [Your Name] will be replaced when you send</div>
-      <div class="email-body">${body}</div>
-      <div style="display:flex;gap:10px;margin-top:1.25rem;flex-wrap:wrap">
-        <button class="btn btn-gold" onclick="openMailto(${id})" ${!leg.email?'disabled':''}>✉ Open in my email app</button>
+      <div class="email-body">${esc(body)}</div>
+      <p class="email-note">This is a preview. The email opens in your own email app, where you can edit it. Replace [Your Name] with your name before you send. No email app? Use Copy text.</p>
+      <div class="btn-row">
+        <button class="btn btn-navy" onclick="openMailto(${id})" ${!leg.email?'disabled':''}>Open in my email app</button>
         <button class="btn" onclick="copyEmailText(${id})">Copy text</button>
         <button class="btn" onclick="g('email-section').innerHTML=''">Close</button>
       </div>
-      <div id="copy-ok-${id}" style="font-size:12px;color:#1b5e20;margin-top:6px;display:none">✓ Copied!</div>
+      <p class="copied" id="copy-ok-${id}">Copied.</p>
     </div>`;
   g('email-section').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -1013,11 +1281,16 @@ async function loadAdminData(){
 
 // ── INIT ──
 async function init(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session) currentUser=session.user;
-  await Promise.all([loadTopics(),loadLegislators(),loadTemplates()]);
-  renderTopicSelects();
-  renderBillList();
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session) currentUser=session.user;
+  }catch(e){console.error('[init] session check failed:',e);}
+  const names=['topics','legislators','templates'];
+  const res=await Promise.allSettled([loadTopics(),loadLegislators(),loadTemplates()]);
+  const failed=[];
+  res.forEach((r,i)=>{if(r.status==='rejected'){console.error('[init] '+names[i]+' failed to load:',r.reason);failed.push(names[i]+': '+((r.reason&&r.reason.message)||r.reason));}});
+  try{renderTopicSelects();renderBillList();}catch(e){console.error('[init] render failed:',e);failed.push('render: '+((e&&e.message)||e));}
+  if(failed.length) showAddrMsg('Part of the page did not load correctly. <span style="opacity:.6">(code: init-error: '+esc(failed.join('; '))+')</span>');
 }
 init();
 </script>
